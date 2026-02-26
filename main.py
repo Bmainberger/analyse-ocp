@@ -1,102 +1,71 @@
+import os
+# Cette ligne installe l'outil de graphique automatiquement au lancement
+os.system('pip install plotly')
+
 import streamlit as st
+import plotly.express as px
 
-# Configuration de la page
+# Configuration
 st.set_page_config(page_title="OCP Patrimoine - Expert", layout="wide")
-
-# Titre principal
 st.title("🛡️ OCP Patrimoine - Bilan 360°")
 
-# --- SECTIONS 1 & 2 : CLIENT & PRO ---
+# --- CLIENT ---
 st.header("1 & 2. État Civil & Profession")
 c1, c2 = st.columns(2)
 with c1:
     nom = st.text_input("Nom & Prénom du Client")
-    age = st.number_input("Âge", min_value=18, max_value=100, value=45)
-    statut_pro = st.selectbox("Statut Professionnel", ["Salarié", "TNS / Libéral", "Dirigeant (SAS/SARL)", "Retraité", "Sans activité"])
+    statut = st.selectbox("Statut Pro", ["Salarié", "TNS", "Dirigeant", "Retraité"])
 with c2:
-    situation = st.selectbox("Situation Familiale", ["Célibataire", "Marié(e) (Communauté)", "Marié(e) (Séparation)", "Pacsé(e)", "Divorcé(e)", "Veuf(ve)"])
-    revenus = st.number_input("Revenu Annuel Net Global (€)", min_value=0, step=1000)
-    enfants = st.number_input("Nombre d'enfants à charge", min_value=0, step=1)
+    sit = st.selectbox("Situation", ["Marié(e)", "Pacsé(e)", "Célibataire"])
+    rev = st.number_input("Revenu Annuel Net (€)", min_value=0)
 
 st.markdown("---")
 
-# --- SECTIONS 3 & 4 : PATRIMOINE IMMOBILIER ---
+# --- IMMOBILIER ---
 st.header("3 & 4. Patrimoine Immobilier")
-st.write("Détaillez vos actifs immobiliers physiques et financiers (Pierre-Papier)")
-
-t1, t2 = st.tabs(["🏠 Immobilier Physique", "🏢 SCPI / GFV / SCI"])
-
+nb_i = st.number_input("Nombre de biens immobiliers", min_value=0, step=1)
 total_immo = 0.0
-
-with t1:
-    col_i1, col_i2 = st.columns(2)
-    with col_i1:
-        rp = st.number_input("Résidence Principale (€)", min_value=0, step=5000)
-        rs = st.number_input("Résidence Secondaire (€)", min_value=0, step=5000)
-    with col_i2:
-        locatif = st.number_input("Investissement Locatif (Pinel, LMNP...) (€)", min_value=0, step=5000)
-        foncier = st.number_input("Terrains / Foncier (€)", min_value=0, step=5000)
-    total_immo += (rp + rs + locatif + foncier)
-
-with t2:
-    st.info("Calcul automatique de la valeur Pierre-Papier")
-    c_s1, c_s2 = st.columns(2)
-    with c_s1:
-        p_part = st.number_input("Prix de la part (€)", min_value=0, step=10, key="price_part")
-        n_part = st.number_input("Nombre de parts", min_value=0, step=1, key="nb_part")
-    with c_s2:
-        type_pp = st.selectbox("Type de support", ["SCPI Rendement", "SCPI Fiscale", "SCI / SC", "GFV (Groupement Foncier Viticole)", "GFI (Forestier)"])
-        val_calculee = p_part * n_part
-        st.write(f"**Valeur totale estimée : {val_calculee:,.0f} €**")
-    total_immo += val_calculee
+for i in range(nb_i):
+    val = st.number_input(f"Valeur vénale du bien n°{i+1} (€)", key=f"v_{i}")
+    total_immo += val
 
 st.markdown("---")
 
-# --- SECTION 5 : PATRIMOINE FINANCIER & RETRAITE ---
+# --- FINANCIER & RETRAITE ---
 st.header("5. Patrimoine Financier & Retraite")
-c_f1, c_f2 = st.columns(2)
-with c_f1:
-    assurance_vie = st.number_input("Assurance-Vie / Capitalisation (€)", min_value=0, step=1000)
-    livrets = st.number_input("Liquidités (Livrets, Compte Courant) (€)", min_value=0, step=1000)
-    pea = st.number_input("PEA / Compte Titres (€)", min_value=0, step=1000)
-with c_f2:
-    per = st.number_input("PER (Individuel ou Collectif) (€)", min_value=0, step=1000)
-    madelin = st.number_input("Contrats Madelin / Art. 83 (€)", min_value=0, step=1000)
-    pEE = st.number_input("Épargne Salariale (PEE / PERCO) (€)", min_value=0, step=1000)
-
-total_fin = assurance_vie + livrets + pea + per + madelin + pEE
-
-st.markdown("---")
-
-# --- SECTION 6, 7 & 8 : PRÉVOYANCE, SUCCESSION & RENTES ---
-st.header("6, 7 & 8. Analyse des Risques & Objectifs")
-c_a1, c_a2 = st.columns(2)
-with c_a1:
-    st.subheader("🛡️ Prévoyance & Succession")
-    st.checkbox("Assurance Emprunteur (Couverture des prêts)")
-    st.checkbox("Prévoyance Professionnelle (IJ / Invalidité)")
-    st.checkbox("Garantie Décès / Rente Éducation")
-    st.checkbox("Protection du conjoint (Testament / Donation)")
-with c_a2:
-    st.subheader("📈 Objectifs Retraite")
-    age_retraite = st.number_input("Âge de départ souhaité", value=64, min_value=50)
-    revenu_souhaite = st.number_input("Revenu mensuel net souhaité (€)", min_value=0, step=100)
-    st.write("Le bilan analysera l'effort d'épargne nécessaire.")
+st.info("Inclut : Assurance-Vie, PER, Madelin, PERCO, Article 83, Livrets")
+nb_f = st.number_input("Nombre de comptes / contrats", min_value=0, step=1)
+total_fin = 0.0
+for k in range(nb_f):
+    colf1, colf2 = st.columns(2)
+    with colf1:
+        typ = st.selectbox(f"Type contrat {k}", ["Assurance-Vie", "PER", "Madelin", "PEA", "Livret A", "PERCO", "Art. 83"], key=f"t_{k}")
+    with colf2:
+        solde = st.number_input(f"Solde du contrat {k} (€)", key=f"s_{k}")
+        total_fin += solde
 
 st.markdown("---")
 
-# --- SECTION 9 : SYNTHÈSE FINALE ---
+# --- PRÉVOYANCE ---
+st.header("6. Prévoyance & Emprunteur")
+st.write("**Garanties professionnelles et personnelles**")
+st.checkbox("Assurance Emprunteur (Décès, PTIA, IPT, ITT, Perte emploi)")
+st.checkbox("Prévoyance (Rente Éducation, Rente Conjoint, IJ)")
+
+st.markdown("---")
+
+# --- SYNTHÈSE GLOBALE ---
 st.header("9. Synthèse du Patrimoine Brut")
-total_patrimoine = total_immo + total_fin
-
-col_m1, col_m2 = st.columns(2)
-with col_m1:
-    st.metric("PATRIMOINE IMMOBILIER", f"{total_immo:,.0f} €")
-    st.metric("PATRIMOINE FINANCIER", f"{total_fin:,.0f} €")
-with col_m2:
-    st.subheader("Total Global")
-    st.title(f"{total_patrimoine:,.0f} €")
-
-if st.button("Valider et Enregistrer le Bilan"):
-    st.balloons()
-    st.success(f"Bilan de {nom} enregistré avec succès !")
+total_global = total_immo + total_fin
+if total_global > 0:
+    col_r, col_g = st.columns([1, 1])
+    with col_r:
+        st.metric("TOTAL IMMOBILIER", f"{total_immo:,.0f} €")
+        st.metric("TOTAL FINANCIER", f"{total_fin:,.0f} €")
+        st.subheader(f"Patrimoine Global : {total_global:,.0f} €")
+    with col_g:
+        # Création du graphique camembert
+        fig = px.pie(names=["Immobilier", "Financier"], values=[total_immo, total_fin], hole=0.4)
+        st.plotly_chart(fig, use_container_width=True)
+else:
+    st.write("Saisissez des montants pour générer le graphique de synthèse.")
