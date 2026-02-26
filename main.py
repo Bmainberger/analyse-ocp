@@ -56,39 +56,49 @@ for i in range(nb_biens):
 
 st.markdown("---")
 
-# --- SECTION 4 : IMMOBILIER COLLECTIF (PIERRE-PAPIER) ---
+# --- SECTION 4 : IMMOBILIER COLLECTIF ---
 st.header("4. Patrimoine Immobilier Collectif")
-st.info("SCPI, SCI, OPCI, GFV, GFI, Club Deal...")
-
-nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, max_value=20, step=1)
-
+nb_coll = st.number_input("Nombre de placements collectifs (SCPI, GFI...)", min_value=0, max_value=20, step=1)
 for j in range(nb_coll):
-    with st.expander(f"Placement Collectif n°{j+1}", expanded=True):
-        t1, t2, t3 = st.columns(3)
-        
+    with st.expander(f"Placement Collectif n°{j+1}", expanded=False):
+        t1, t2 = st.columns(2)
         with t1:
-            type_coll = st.selectbox(
-                f"Type de placement {j+1}", 
-                ["SCPI", "SCI", "OPCI", "GFV (Viticole)", "GFI/GFF (Forêt)", "Club Deal", "Crowdfunding"],
-                key=f"type_c_{j}"
-            )
-            nom_support = st.text_input(f"Nom du support / Société de gestion", key=f"nom_c_{j}")
-            
+            st.selectbox(f"Type {j+1}", ["SCPI", "SCI", "OPCI", "GFV", "GFI", "Club Deal"], key=f"type_c_{j}")
+            st.text_input(f"Nom du support", key=f"nom_c_{j}")
         with t2:
-            mode_detention = st.selectbox(
-                f"Mode de détention {j+1}",
-                ["Pleine Propriété", "Nue-Propriété", "Usufruit", "Via Assurance-Vie / PER"],
-                key=f"detent_c_{j}"
-            )
-            valeur_actuelle = st.number_input(f"Valeur actuelle (€) {j+1}", min_value=0, key=f"val_c_{j}")
-
-        with t3:
-            revenus_c = st.number_input(f"Revenus annuels perçus (€) {j+1}", min_value=0, key=f"rev_c_{j}")
-            # Logique spécifique selon le type
-            if type_coll == "SCPI":
-                nb_parts = st.number_input(f"Nombre de parts", min_value=0, key=f"parts_c_{j}")
-            elif type_coll in ["GFI/GFF (Forêt)", "GFV (Viticole)"]:
-                st.write("🌿 *Avantage fiscal forestier/agricole applicable*")
+            st.number_input(f"Valeur actuelle (€)", min_value=0, key=f"val_c_{j}")
 
 st.markdown("---")
-st.success("Sections 1 à 4 opérationnelles. En attente du Patrimoine Financier (Section 5).")
+
+# --- SECTION 5 : PATRIMOINE FINANCIER ---
+st.header("5. Patrimoine Financier")
+st.info("Saisissez ici vos comptes bancaires, livrets, contrats d'assurance-vie, PEA, etc.")
+
+nb_fin = st.number_input("Nombre de comptes ou contrats financiers", min_value=0, max_value=30, step=1)
+
+total_financier = 0.0
+
+for k in range(nb_fin):
+    with st.expander(f"Contrat / Compte n°{k+1}", expanded=True):
+        f1, f2, f3 = st.columns(3)
+        with f1:
+            type_f = st.selectbox(
+                f"Type de placement {k+1}", 
+                ["Livret (A, LDDS, PEL)", "Assurance-Vie", "PER", "PEA / PEA-PME", "Compte-Titres", "Crypto-actifs", "Compte Courant"],
+                key=f"type_f_{k}"
+            )
+            etablissement = st.text_input(f"Établissement (Banque/Assureur)", key=f"etab_f_{k}")
+        with f2:
+            montant = st.number_input(f"Solde / Valeur actuelle (€)", min_value=0.0, step=100.0, key=f"val_f_{k}")
+            total_financier += montant
+            titulaire = st.selectbox(f"Titulaire", ["Client", "Conjoint", "Joint"], key=f"tit_f_{k}")
+        with f3:
+            performance = st.number_input(f"Rendement estimé (%)", min_value=0.0, max_value=20.0, step=0.1, key=f"perf_f_{k}")
+            date_ouv = st.text_input(f"Date d'ouverture (MM/AAAA)", key=f"date_f_{k}")
+
+# Affichage du total financier dynamique
+if total_financier > 0:
+    st.metric(label="Total Patrimoine Financier Saisi", value=f"{total_financier:,.0f} €".replace(",", " "))
+
+st.markdown("---")
+st.success("Sections 1 à 5 validées. Prêt pour les Assurances & Prévoyance (Section 6) ?")
