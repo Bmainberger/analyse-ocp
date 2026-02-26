@@ -7,7 +7,7 @@ st.set_page_config(page_title="OCP Patrimoine - Analyse", page_icon="🛡️", l
 st.title("🛡️ OCP Patrimoine - Bilan et Analyse")
 st.markdown("---")
 
-# --- SECTION 1 : ÉTAT CIVIL ---
+# --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
@@ -16,7 +16,7 @@ with col1:
     date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1))
     lieu_naissance = st.text_input("Lieu de naissance")
 with col2:
-    nationalite = st.text_input("Nationalité")
+    nationalite = st.text_input("Nationalité") 
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
@@ -27,6 +27,18 @@ if nb_enfants > 0:
     for i in range(nb_enfants):
         with c_enf[i % 3]:
             st.date_input(f"Date de naissance Enfant n°{i+1}", value=date(2010, 1, 1), key=f"dnaiss_enf_{i}")
+
+st.markdown("---")
+
+# --- SECTION 2 : COORDONNÉES ---
+st.header("2. Coordonnées")
+c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1]) # Plus de place pour l'adresse
+with c_coo1:
+    adresse = st.text_input("Adresse postale complète")
+with c_coo2:
+    telephone = st.text_input("Téléphone")
+with c_coo3:
+    email = st.text_input("Email")
 
 st.markdown("---")
 
@@ -119,4 +131,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Section État Civil enrichie avec Lieu de Naissance et Nationalité !")
+st.success("Structure aérée avec la nouvelle section Coordonnées !")
