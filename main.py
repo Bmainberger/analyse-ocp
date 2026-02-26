@@ -14,11 +14,13 @@ with col1:
     nom_client = st.text_input("Nom du Client")
     prenom_client = st.text_input("Prénom du Client")
     date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1))
+    lieu_naissance = st.text_input("Lieu de naissance")
 with col2:
+    nationalite = st.text_input("Nationalité")
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
-# MODIFICATION : Ajout des dates de naissance des enfants
+# Détail des enfants
 if nb_enfants > 0:
     st.write("📅 **Détail des enfants :**")
     c_enf = st.columns(3)
@@ -117,4 +119,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Structure d'origine rétablie avec les dates de naissance des enfants !")
+st.success("Section État Civil enrichie avec Lieu de Naissance et Nationalité !")
