@@ -22,23 +22,33 @@ st.markdown("---")
 
 # --- SECTIONS 3 & 4 : PATRIMOINE IMMOBILIER ---
 st.header("3 & 4. Patrimoine Immobilier")
-col_immo1, col_immo2 = st.columns(2)
+st.write("Détaillez vos actifs immobiliers physiques et financiers (Pierre-Papier)")
 
-with col_immo1:
-    st.subheader("🏠 Immobilier Physique")
-    rp = st.number_input("Résidence Principale (€)", min_value=0, step=5000)
-    rs = st.number_input("Résidence Secondaire (€)", min_value=0, step=5000)
-    locatif = st.number_input("Investissement Locatif (Pinel, LMNP...) (€)", min_value=0, step=5000)
-    foncier = st.number_input("Terrains / Foncier (€)", min_value=0, step=5000)
+t1, t2 = st.tabs(["🏠 Immobilier Physique", "🏢 SCPI / GFV / SCI"])
 
-with col_immo2:
-    st.subheader("🏢 Pierre-Papier & Divers")
-    scpi = st.number_input("SCPI (Rendement ou Fiscale) (€)", min_value=0, step=1000)
-    sci = st.number_input("SCI / SC (Unités de compte) (€)", min_value=0, step=1000)
-    gfv = st.number_input("GFV (Viticole) / GFI (Forestier) (€)", min_value=0, step=1000)
-    st.info("Saisissez directement la valeur vénale totale de vos parts.")
+total_immo = 0.0
 
-total_immo = rp + rs + locatif + foncier + scpi + sci + gfv
+with t1:
+    col_i1, col_i2 = st.columns(2)
+    with col_i1:
+        rp = st.number_input("Résidence Principale (€)", min_value=0, step=5000)
+        rs = st.number_input("Résidence Secondaire (€)", min_value=0, step=5000)
+    with col_i2:
+        locatif = st.number_input("Investissement Locatif (Pinel, LMNP...) (€)", min_value=0, step=5000)
+        foncier = st.number_input("Terrains / Foncier (€)", min_value=0, step=5000)
+    total_immo += (rp + rs + locatif + foncier)
+
+with t2:
+    st.info("Calcul automatique de la valeur Pierre-Papier")
+    c_s1, c_s2 = st.columns(2)
+    with c_s1:
+        p_part = st.number_input("Prix de la part (€)", min_value=0, step=10, key="price_part")
+        n_part = st.number_input("Nombre de parts", min_value=0, step=1, key="nb_part")
+    with c_s2:
+        type_pp = st.selectbox("Type de support", ["SCPI Rendement", "SCPI Fiscale", "SCI / SC", "GFV (Groupement Foncier Viticole)", "GFI (Forestier)"])
+        val_calculee = p_part * n_part
+        st.write(f"**Valeur totale estimée : {val_calculee:,.0f} €**")
+    total_immo += val_calculee
 
 st.markdown("---")
 
@@ -46,52 +56,47 @@ st.markdown("---")
 st.header("5. Patrimoine Financier & Retraite")
 c_f1, c_f2 = st.columns(2)
 with c_f1:
-    st.subheader("💰 Épargne & Placements")
     assurance_vie = st.number_input("Assurance-Vie / Capitalisation (€)", min_value=0, step=1000)
-    livrets = st.number_input("Liquidités (Livrets, CC) (€)", min_value=0, step=1000)
-    pea = st.number_input("PEA / Comptes Titres (€)", min_value=0, step=1000)
+    livrets = st.number_input("Liquidités (Livrets, Compte Courant) (€)", min_value=0, step=1000)
+    pea = st.number_input("PEA / Compte Titres (€)", min_value=0, step=1000)
 with c_f2:
-    st.subheader("📉 Retraite & Salarial")
     per = st.number_input("PER (Individuel ou Collectif) (€)", min_value=0, step=1000)
     madelin = st.number_input("Contrats Madelin / Art. 83 (€)", min_value=0, step=1000)
-    pee = st.number_input("Épargne Salariale (PEE / PERCO) (€)", min_value=0, step=1000)
+    pEE = st.number_input("Épargne Salariale (PEE / PERCO) (€)", min_value=0, step=1000)
 
-total_fin = assurance_vie + livrets + pea + per + madelin + pee
+total_fin = assurance_vie + livrets + pea + per + madelin + pEE
 
 st.markdown("---")
 
-# --- SECTIONS 6, 7 & 8 : PRÉVOYANCE, SUCCESSION & RETRAITE ---
+# --- SECTION 6, 7 & 8 : PRÉVOYANCE, SUCCESSION & RENTES ---
 st.header("6, 7 & 8. Analyse des Risques & Objectifs")
 c_a1, c_a2 = st.columns(2)
 with c_a1:
     st.subheader("🛡️ Prévoyance & Succession")
     st.checkbox("Assurance Emprunteur (Couverture des prêts)")
     st.checkbox("Prévoyance Professionnelle (IJ / Invalidité)")
-    st.checkbox("Garantie Décès (Capital)")
-    st.checkbox("Rente Éducation")
-    st.checkbox("Rente Conjoint")
+    st.checkbox("Garantie Décès / Rente Éducation")
     st.checkbox("Protection du conjoint (Testament / Donation)")
-    st.checkbox("Clause Bénéficiaire (Mise à jour)")
 with c_a2:
     st.subheader("📈 Objectifs Retraite")
     age_retraite = st.number_input("Âge de départ souhaité", value=64, min_value=50)
-    revenu_souhaite = st.number_input("Revenu mensuel net souhaité à la retraite (€)", min_value=0, step=100)
+    revenu_souhaite = st.number_input("Revenu mensuel net souhaité (€)", min_value=0, step=100)
     st.write("Le bilan analysera l'effort d'épargne nécessaire.")
 
 st.markdown("---")
 
-# --- SECTION 9 : SYNTHÈSE ---
+# --- SECTION 9 : SYNTHÈSE FINALE ---
 st.header("9. Synthèse du Patrimoine Brut")
-total_global = total_immo + total_fin
+total_patrimoine = total_immo + total_fin
 
 col_m1, col_m2 = st.columns(2)
 with col_m1:
-    st.metric("TOTAL IMMOBILIER", f"{total_immo:,.0f} €")
-    st.metric("TOTAL FINANCIER", f"{total_fin:,.0f} €")
+    st.metric("PATRIMOINE IMMOBILIER", f"{total_immo:,.0f} €")
+    st.metric("PATRIMOINE FINANCIER", f"{total_fin:,.0f} €")
 with col_m2:
-    st.subheader("Estimation Globale")
-    st.title(f"{total_global:,.0f} €")
+    st.subheader("Total Global")
+    st.title(f"{total_patrimoine:,.0f} €")
 
 if st.button("Valider et Enregistrer le Bilan"):
     st.balloons()
-    st.success(f"Dossier de {nom} prêt pour analyse.")
+    st.success(f"Bilan de {nom} enregistré avec succès !")
