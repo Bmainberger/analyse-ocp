@@ -18,11 +18,6 @@ with col1:
 with col2:
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
-    if nb_enfants > 0:
-        cols_ages = st.columns(nb_enfants)
-        for i in range(nb_enfants):
-            with cols_ages[i]:
-                st.number_input(f"Âge Enfant {i+1}", min_value=0, max_value=30, key=f"age_{i}")
 
 st.markdown("---")
 
@@ -41,16 +36,14 @@ st.markdown("---")
 # --- SECTION 3 & 4 : IMMOBILIER ---
 st.header("3 & 4. Patrimoine Immobilier (Physique & Collectif)")
 tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier (SCPI...)"])
-
 with tab1:
-    nb_biens = st.number_input("Nombre de biens immobiliers", min_value=0, max_value=10)
+    nb_biens = st.number_input("Nombre de biens immobiliers", min_value=0)
     for i in range(nb_biens):
         with st.expander(f"Bien n°{i+1}"):
             st.selectbox(f"Type", ["Résidence Principale", "Résidence Secondaire", "Locatif"], key=f"type_i_{i}")
             st.number_input(f"Valeur vénale (€)", min_value=0, key=f"val_i_{i}")
-
 with tab2:
-    nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, max_value=15)
+    nb_coll = st.number_input("Nombre de placements collectifs", min_value=0)
     for j in range(nb_coll):
         with st.expander(f"Placement n°{j+1}"):
             st.selectbox(f"Type", ["SCPI", "SCI", "OPCI", "GFV", "GFI"], key=f"type_c_{j}")
@@ -75,40 +68,51 @@ if total_fin > 0:
 
 st.markdown("---")
 
-# --- SECTION 6 : PRÉVOYANCE ---
+# --- SECTION 6 : PRÉVOYANCE (VERSION EXPERTE) ---
 st.header("6. Prévoyance & Protection")
 nb_prev = st.number_input("Nombre de contrats de prévoyance", min_value=0, step=1)
 for p in range(nb_prev):
-    with st.expander(f"Contrat de Prévoyance n°{p+1}", expanded=True):
-        p1, p2, p3 = st.columns(3)
+    with st.expander(f"Contrat de Prévoyance n°{p+1}", expanded=False):
+        p1, p2 = st.columns(2)
         with p1:
-            type_prev = st.selectbox("Type de garantie", 
-                ["Garantie Décès", "Maintien de Revenu (IJ)", "Invalidité", "Dépendance", "Assurance Emprunteur", "GAV"], 
+            t_prev = st.selectbox("Type de garantie", 
+                ["Garantie Décès", "Invalidité / Incapacité", "Arrêt de travail (IJ)", "Dépendance", "GAV", "Assurance Emprunteur"], 
                 key=f"type_p_{p}")
-            assureur_p = st.text_input("Assureur", key=f"ass_p_{p}")
+            st.text_input("Assureur", key=f"ass_p_{p}")
+            st.text_input("Bénéficiaires", key=f"ben_p_{p}")
         with p2:
-            capital = st.number_input("Capital/Rente garanti (€)", min_value=0, key=f"cap_p_{p}")
-            cotisation_p = st.number_input("Cotisation Annuelle (€)", min_value=0, key=f"cot_p_{p}")
-        with p3:
-            if type_prev == "Maintien de Revenu (IJ)":
-                st.selectbox("Franchise (jours)", ["3j", "7j", "15j", "30j", "90j"], key=f"fran_p_{p}")
-            elif type_prev == "Assurance Emprunteur":
-                st.number_input("Quotité (%)", min_value=0, max_value=100, value=100, key=f"quo_p_{p}")
-            else:
-                st.text_input("Bénéficiaires", value="Clause Standard", key=f"ben_p_{p}")
+            st.number_input("Capital ou Rente garanti (€)", min_value=0, key=f"cap_p_{p}")
+            st.number_input("Cotisation Annuelle (€)", min_value=0, key=f"cot_p_{p}")
+            st.selectbox("Statut du contrat", ["Actif", "Résilié", "Suspendu"], key=f"stat_p_{p}")
+
+        # Détails spécifiques selon le type
+        st.markdown("**Détails techniques :**")
+        d1, d2 = st.columns(2)
+        if t_prev == "Arrêt de travail (IJ)":
+            with d1: st.selectbox("Franchise", ["7j", "15j", "30j", "90j"], key=f"fran_p_{p}")
+            with d2: st.number_input("Durée max indemnisation (jours)", value=1095, key=f"dur_p_{p}")
+        elif t_prev == "Invalidité / Incapacité":
+            with d1: st.selectbox("Barème", ["Professionnel", "Sécurité Sociale", "Croisé"], key=f"bar_p_{p}")
+            with d2: st.number_input("Taux de déclenchement (%)", value=33, key=f"taux_p_{p}")
+        elif t_prev == "Assurance Emprunteur":
+            with d1: st.number_input("Quotité (%)", value=100, key=f"quo_p_{p}")
+            with d2: st.multiselect("Garanties", ["Décès", "PTIA", "IPT", "ITT", "Perte Emploi"], key=f"gar_p_{p}")
 
 st.markdown("---")
 
-# --- SECTION 7 : SANTÉ ---
+# --- SECTION 7 : SANTÉ (VERSION EXPERTE) ---
 st.header("7. Santé / Mutuelle")
 col_s1, col_s2 = st.columns(2)
 with col_s1:
-    mut_ass = st.text_input("Nom de la Mutuelle")
-    mut_type = st.selectbox("Type de contrat", ["Individuel", "Collectif (Entreprise)", "Senior"])
-    mut_cot = st.number_input("Cotisation Mensuelle Santé (€)", min_value=0)
+    st.subheader("Informations Générales")
+    st.text_input("Assureur Santé")
+    st.selectbox("Type de contrat", ["Individuel", "Collectif Entreprise", "Senior", "Madelin (TNS)"])
+    st.number_input("Cotisation Mensuelle (€)", min_value=0)
 with col_s2:
-    st.select_slider("Niveau global de remboursement", options=["Basique (100%)", "Moyen (200%)", "Haut (300%)", "Premium (400%+)"])
-    st.multiselect("Options incluses", ["Chambre particulière", "Médecines douces", "Renfort Optique", "Renfort Dentaire"])
+    st.subheader("Niveaux de Remboursement (%)")
+    st.number_input("Consultations / Spécialistes", value=100, step=50)
+    st.number_input("Optique / Dentaire", value=200, step=50)
+    st.number_input("Hospitalisation", value=100, step=50)
 
 st.markdown("---")
-st.success("Sections 1 à 7 terminées ! Prête pour la suite ?")
+st.success("Sections 1 à 7 (Expert) opérationnelles ! On continue avec les Objectifs ?")
