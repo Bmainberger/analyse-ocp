@@ -32,13 +32,14 @@ with col_immo1:
     foncier = st.number_input("Terrains / Foncier (€)", min_value=0, step=5000)
 
 with col_immo2:
-    st.subheader("🏢 Pierre-Papier")
-    scpi = st.number_input("SCPI (Rendement / Fiscale) (€)", min_value=0, step=1000)
-    sci = st.number_input("SCI / SC (Unités de compte) (€)", min_value=0, step=1000)
-    gfv = st.number_input("GFV (Viticole) (€)", min_value=0, step=1000)
-    gfi = st.number_input("GFI (Forestier) (€)", min_value=0, step=1000)
+    st.subheader("🏢 Pierre-Papier (Calcul Automatique)")
+    type_pp = st.selectbox("Type de support", ["SCPI de Rendement", "SCPI Fiscale", "SCI / SC", "GFV (Viticole)", "GFI (Forestier)"])
+    p_part = st.number_input("Prix d'une part (€)", min_value=0, step=10)
+    n_part = st.number_input("Nombre de parts détenues", min_value=0, step=1)
+    val_pierre_papier = p_part * n_part
+    st.write(f"**Valeur calculée : {val_pierre_papier:,.0f} €**")
 
-total_immo = rp + rs + locatif + foncier + scpi + sci + gfv + gfi
+total_immo = rp + rs + locatif + foncier + val_pierre_papier
 
 st.markdown("---")
 
@@ -48,10 +49,10 @@ c_f1, c_f2 = st.columns(2)
 with c_f1:
     st.subheader("💰 Épargne Disponibles")
     assurance_vie = st.number_input("Assurance-Vie / Capitalisation (€)", min_value=0, step=1000)
-    livrets = st.number_input("Liquidités (Livrets, Compte Courant) (€)", min_value=0, step=1000)
+    livrets = st.number_input("Liquidités (Livrets, CC) (€)", min_value=0, step=1000)
     pea = st.number_input("PEA / Comptes Titres (€)", min_value=0, step=1000)
 with c_f2:
-    st.subheader("📉 Retraite & Salarial")
+    st.subheader("📉 Épargne Retraite & Salariale")
     per = st.number_input("PER (Individuel ou Collectif) (€)", min_value=0, step=1000)
     madelin = st.number_input("Contrats Madelin (€)", min_value=0, step=1000)
     art83 = st.number_input("Article 83 (€)", min_value=0, step=1000)
@@ -81,7 +82,7 @@ with c_a2:
 
 st.markdown("---")
 
-# --- SECTION 9 : SYNTHÈSE ---
+# --- SECTION 9 : SYNTHÈSE FINALE ---
 st.header("9. Synthèse du Patrimoine Brut")
 total_global = total_immo + total_fin
 
