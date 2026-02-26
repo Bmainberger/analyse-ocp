@@ -32,7 +32,7 @@ st.markdown("---")
 
 # --- SECTION 2 : COORDONNÉES ---
 st.header("2. Coordonnées")
-c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1]) # Plus de place pour l'adresse
+c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1])
 with c_coo1:
     adresse = st.text_input("Adresse postale complète")
 with c_coo2:
@@ -42,8 +42,24 @@ with c_coo3:
 
 st.markdown("---")
 
-# --- SECTION 3 & 4 : PATRIMOINE IMMOBILIER ---
-st.header("3 & 4. Patrimoine Immobilier")
+# --- SECTION 3 : PROFESSION & REVENUS ---
+st.header("3. Situation Professionnelle & Revenus")
+cp1, cp2, cp3 = st.columns(3)
+with cp1:
+    statut_pro = st.selectbox("Statut Professionnel", 
+        ["Salarié", "TNS / Libéral", "Dirigeant (Gérant/Président)", "Fonctionnaire", "Retraité", "Sans activité"])
+    profession = st.text_input("Profession / Intitulé du poste")
+with cp2:
+    revenu_annuel = st.number_input("Revenu net annuel (€)", min_value=0)
+    autres_revenus = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0)
+with cp3:
+    tranche_impo = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"])
+    age_retraite_prevu = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64)
+
+st.markdown("---")
+
+# --- SECTION 4 & 5 : PATRIMOINE IMMOBILIER (Anciennement 3 & 4) ---
+st.header("4 & 5. Patrimoine Immobilier")
 tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier (SCPI, SCI, GFV...)"])
 
 with tab1:
@@ -83,8 +99,8 @@ with tab2:
 
 st.markdown("---")
 
-# --- SECTION 5 : PATRIMOINE FINANCIER ---
-st.header("5. Patrimoine Financier")
+# --- SECTION 6 : PATRIMOINE FINANCIER ---
+st.header("6. Patrimoine Financier")
 nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0)
 total_fin = 0.0
 for k in range(nb_fin):
@@ -103,8 +119,8 @@ if total_fin > 0:
 
 st.markdown("---")
 
-# --- SECTION 6 : PRÉVOYANCE ---
-st.header("6. Prévoyance & Protection")
+# --- SECTION 7 : PRÉVOYANCE ---
+st.header("7. Prévoyance & Protection")
 nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0)
 for p in range(nb_prev_input):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
@@ -120,8 +136,8 @@ for p in range(nb_prev_input):
 
 st.markdown("---")
 
-# --- SECTION 7 : SANTÉ ---
-st.header("7. Santé / Mutuelle")
+# --- SECTION 8 : SANTÉ ---
+st.header("8. Santé / Mutuelle")
 s1, s2 = st.columns(2)
 with s1:
     st.text_input("Assureur Santé")
@@ -131,4 +147,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Structure aérée avec la nouvelle section Coordonnées !")
+st.success("Sections Coordonnées et Profession ajoutées !")
