@@ -23,7 +23,7 @@ with col2:
     st.subheader("💍 Situation")
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     
-    # Logique Conjoint : On affiche les champs SI Marié ou Pacsé
+    # Logique Conjoint
     en_couple = situation in ["Marié(e)", "Pacsé(e)"]
     
     if en_couple:
@@ -34,7 +34,6 @@ with col2:
     
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
-# Détail des enfants
 if nb_enfants > 0:
     st.write("📅 **Détail des enfants :**")
     c_enf = st.columns(3)
@@ -56,40 +55,41 @@ with c_coo3:
 
 st.markdown("---")
 
-# --- SECTION 3 : PROFESSION & REVENUS ---
+# --- SECTION 3 : PROFESSION & REVENUS DÉTAILLÉS ---
 st.header("3. Situation Professionnelle & Revenus")
 
-# On crée deux colonnes si en couple, sinon une seule
 if en_couple:
     col_pro1, col_pro2 = st.columns(2)
-    
     with col_pro1:
         st.subheader("💼 Client")
         statut_pro = st.selectbox("Statut (Client)", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="stat_c")
         profession = st.text_input("Profession (Client)", key="prof_c")
-        rev_c = st.number_input("Revenu net annuel (Client) (€)", min_value=0, key="rev_c")
-        
+        rev_c = st.number_input("Salaire / BNC / BIC net annuel (Client) (€)", min_value=0, key="rev_c")
     with col_pro2:
         st.subheader("💼 Conjoint")
         statut_pro_conj = st.selectbox("Statut (Conjoint)", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="stat_conj")
         profession_conj = st.text_input("Profession (Conjoint)", key="prof_conj")
-        rev_conj = st.number_input("Revenu net annuel (Conjoint) (€)", min_value=0, key="rev_conj")
+        rev_conj = st.number_input("Salaire / BNC / BIC net annuel (Conjoint) (€)", min_value=0, key="rev_conj")
 else:
-    # Affichage Solo
     cp1, cp2 = st.columns(2)
     with cp1:
         statut_pro = st.selectbox("Statut Professionnel", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"])
         profession = st.text_input("Profession")
     with cp2:
-        rev_c = st.number_input("Revenu net annuel (€)", min_value=0)
+        rev_c = st.number_input("Salaire / BNC / BIC net annuel (€)", min_value=0)
 
 st.write(" ")
-# Éléments communs au foyer
-c_fisc1, c_fisc2 = st.columns(2)
-with c_fisc1:
-    autres_rev = st.number_input("Autres revenus du foyer (Foncier, etc.) (€)", min_value=0)
-with c_fisc2:
-    tmi = st.selectbox("Tranche Marginale d'Imposition (TMI) du foyer", ["0%", "11%", "30%", "41%", "45%"])
+st.subheader("📊 Autres revenus & Fiscalité du foyer")
+cf1, cf2, cf3 = st.columns(3)
+with cf1:
+    rev_foncier = st.number_input("Revenus Fonciers nets (€)", min_value=0)
+    rev_dividendes = st.number_input("Dividendes / Intérêts (€)", min_value=0)
+with cf2:
+    rev_pensions = st.number_input("Pensions / Rentes perçues (€)", min_value=0)
+    autres_rev_divers = st.number_input("Autres revenus divers (€)", min_value=0)
+with cf3:
+    tmi = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"])
+    pression_fiscale = st.number_input("Impôt sur le revenu global (€)", min_value=0)
 
 st.markdown("---")
 
@@ -103,14 +103,10 @@ with tab1:
         with st.expander(f"Bien n°{i+1}", expanded=True):
             c1, c2 = st.columns(2)
             with c1:
-                st.selectbox(f"Type de bien {i+1}", 
-                   ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking / Garage", "Immeuble de rapport"], 
-                    key=f"type_i_{i}")
+                st.selectbox(f"Type de bien {i+1}", ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking / Garage", "Immeuble de rapport"], key=f"type_i_{i}")
                 st.number_input(f"Valeur vénale (€) {i+1}", min_value=0, key=f"val_i_{i}")
             with c2:
-                st.selectbox(f"Régime / Dispositif fiscal {i+1}", 
-                   ["Droit Commun (Nu)", "LMNP (Amortissement)", "LMP", "Pinel / Duflot", "Malraux", "Monument Historique", "Denormandie"], 
-                    key=f"fisc_i_{i}")
+                st.selectbox(f"Régime / Dispositif fiscal {i+1}", ["Droit Commun (Nu)", "LMNP (Amortissement)", "LMP", "Pinel / Duflot", "Malraux", "Monument Historique", "Denormandie"], key=f"fisc_i_{i}")
                 st.radio(f"Crédit en cours ? {i+1}", ["Non", "Oui"], key=f"cred_i_{i}")
 
 with tab2:
@@ -161,9 +157,7 @@ for p in range(nb_prev_input):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
         p1, p2, p3 = st.columns(3)
         with p1:
-            type_p = st.selectbox("Type de garantie", 
-                ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], 
-                 key=f"p_t_{p}")
+            type_p = st.selectbox("Type de garantie", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
         with p2:
             st.number_input("Montant Garanti (€)", key=f"p_m_{p}")
         with p3:
@@ -182,4 +176,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Bilan Foyer Fiscal (Client + Conjoint) prêt !")
+st.success("Analyse des revenus détaillée prête !")
