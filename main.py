@@ -77,8 +77,6 @@ st.markdown("---")
 
 # --- SECTION 6 : PRÉVOYANCE ---
 st.header("6. Prévoyance & Protection")
-st.info("Analysez ici la protection de la famille et du revenu.")
-
 nb_prev = st.number_input("Nombre de contrats de prévoyance", min_value=0, step=1)
 for p in range(nb_prev):
     with st.expander(f"Contrat de Prévoyance n°{p+1}", expanded=True):
@@ -105,14 +103,12 @@ st.markdown("---")
 st.header("7. Santé / Mutuelle")
 col_s1, col_s2 = st.columns(2)
 with col_s1:
-    st.subheader("Complémentaire Santé")
     mut_ass = st.text_input("Nom de la Mutuelle")
     mut_type = st.selectbox("Type de contrat", ["Individuel", "Collectif (Entreprise)", "Senior"])
     mut_cot = st.number_input("Cotisation Mensuelle Santé (€)", min_value=0)
 with col_s2:
-    st.subheader("Niveaux de Couverture")
     st.select_slider("Niveau global de remboursement", options=["Basique (100%)", "Moyen (200%)", "Haut (300%)", "Premium (400%+)"])
-    options_s = st.multiselect("Options incluses", ["Chambre particulière", "Médecines douces", "Renfort Optique", "Renfort Dentaire"])
+    st.multiselect("Options incluses", ["Chambre particulière", "Médecines douces", "Renfort Optique", "Renfort Dentaire"])
 
 st.markdown("---")
-st.success("Sections 1 à 7 terminées ! Prête pour les Objectifs du Client (Section
+st.success("Sections 1 à 7 terminées ! Prête pour la suite ?")
