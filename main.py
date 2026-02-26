@@ -55,7 +55,7 @@ with c_coo3:
 
 st.markdown("---")
 
-# --- SECTION 3 : PROFESSION & REVENUS DÉTAILLÉS ---
+# --- SECTION 3 : PROFESSION & REVENUS ---
 st.header("3. Situation Professionnelle & Revenus")
 
 if en_couple:
@@ -79,7 +79,7 @@ else:
         rev_c = st.number_input("Salaire / BNC / BIC net annuel (€)", min_value=0)
 
 st.write(" ")
-st.subheader("📊 Autres revenus & Fiscalité du foyer")
+st.subheader("📊 Autres revenus & TMI")
 cf1, cf2, cf3 = st.columns(3)
 with cf1:
     rev_foncier = st.number_input("Revenus Fonciers nets (€)", min_value=0)
@@ -88,8 +88,8 @@ with cf2:
     rev_pensions = st.number_input("Pensions / Rentes perçues (€)", min_value=0)
     autres_rev_divers = st.number_input("Autres revenus divers (€)", min_value=0)
 with cf3:
-    tmi = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"])
-    pression_fiscale = st.number_input("Impôt sur le revenu global (€)", min_value=0)
+    # On ne garde que la TMI pour l'analyse fiscale future
+    tmi = st.selectbox("Tranche Marginale d'Imposition (TMI) estimée", ["0%", "11%", "30%", "41%", "45%"])
 
 st.markdown("---")
 
@@ -176,4 +176,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Analyse des revenus détaillée prête !")
+st.success("Configuration des revenus optimisée !")
