@@ -18,6 +18,14 @@ with col2:
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
+# MODIFICATION : Ajout des dates de naissance des enfants
+if nb_enfants > 0:
+    st.write("📅 **Détail des enfants :**")
+    c_enf = st.columns(3)
+    for i in range(nb_enfants):
+        with c_enf[i % 3]:
+            st.date_input(f"Date de naissance Enfant n°{i+1}", value=date(2010, 1, 1), key=f"dnaiss_enf_{i}")
+
 st.markdown("---")
 
 # --- SECTION 3 & 4 : PATRIMOINE IMMOBILIER ---
@@ -31,12 +39,12 @@ with tab1:
             c1, c2 = st.columns(2)
             with c1:
                 st.selectbox(f"Type de bien {i+1}", 
-                    ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking / Garage", "Immeuble de rapport"], 
+                   ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking / Garage", "Immeuble de rapport"], 
                     key=f"type_i_{i}")
                 st.number_input(f"Valeur vénale (€) {i+1}", min_value=0, key=f"val_i_{i}")
             with c2:
                 st.selectbox(f"Régime / Dispositif fiscal {i+1}", 
-                    ["Droit Commun (Nu)", "LMNP (Amortissement)", "LMP", "Pinel / Duflot", "Malraux", "Monument Historique", "Denormandie"], 
+                   ["Droit Commun (Nu)", "LMNP (Amortissement)", "LMP", "Pinel / Duflot", "Malraux", "Monument Historique", "Denormandie"], 
                     key=f"fisc_i_{i}")
                 st.radio(f"Crédit en cours ? {i+1}", ["Non", "Oui"], key=f"cred_i_{i}")
 
@@ -83,14 +91,14 @@ st.markdown("---")
 
 # --- SECTION 6 : PRÉVOYANCE ---
 st.header("6. Prévoyance & Protection")
-nb_p = st.number_input("Nombre de contrats de prévoyance", min_value=0)
-for p in range(nb_p):
+nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0)
+for p in range(nb_prev_input):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
         p1, p2, p3 = st.columns(3)
         with p1:
             type_p = st.selectbox("Type de garantie", 
                 ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], 
-                key=f"p_t_{p}")
+                 key=f"p_t_{p}")
         with p2:
             st.number_input("Montant Garanti (€)", key=f"p_m_{p}")
         with p3:
@@ -109,4 +117,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Immobilier (LMNP, Pinel...) et Prévoyance (Rentes) à jour !")
+st.success("Structure d'origine rétablie avec les dates de naissance des enfants !")
