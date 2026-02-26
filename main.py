@@ -10,14 +10,28 @@ st.markdown("---")
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
+
 with col1:
+    st.subheader("👤 Client (Principal)")
     nom_client = st.text_input("Nom du Client")
     prenom_client = st.text_input("Prénom du Client")
-    date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1))
-    lieu_naissance = st.text_input("Lieu de naissance")
+    date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dn_c")
+    lieu_naissance = st.text_input("Lieu de naissance", key="ln_c")
+    nationalite = st.text_input("Nationalité", key="nat_c")
+
 with col2:
-    nationalite = st.text_input("Nationalité") 
+    st.subheader("💍 Situation")
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
+    
+    # Logique Conjoint : On affiche les champs SI Marié ou Pacsé
+    en_couple = situation in ["Marié(e)", "Pacsé(e)"]
+    
+    if en_couple:
+        st.info("ℹ️ Informations du Conjoint / Partenaire")
+        nom_conjoint = st.text_input("Nom du Conjoint")
+        prenom_conjoint = st.text_input("Prénom du Conjoint")
+        date_naissance_conj = st.date_input("Date de naissance Conjoint", value=date(1980, 1, 1), key="dn_conj")
+    
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
 # Détail des enfants
@@ -44,21 +58,42 @@ st.markdown("---")
 
 # --- SECTION 3 : PROFESSION & REVENUS ---
 st.header("3. Situation Professionnelle & Revenus")
-cp1, cp2, cp3 = st.columns(3)
-with cp1:
-    statut_pro = st.selectbox("Statut Professionnel", 
-        ["Salarié", "TNS / Libéral", "Dirigeant (Gérant/Président)", "Fonctionnaire", "Retraité", "Sans activité"])
-    profession = st.text_input("Profession / Intitulé du poste")
-with cp2:
-    revenu_annuel = st.number_input("Revenu net annuel (€)", min_value=0)
-    autres_revenus = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0)
-with cp3:
-    tranche_impo = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"])
-    age_retraite_prevu = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64)
+
+# On crée deux colonnes si en couple, sinon une seule
+if en_couple:
+    col_pro1, col_pro2 = st.columns(2)
+    
+    with col_pro1:
+        st.subheader("💼 Client")
+        statut_pro = st.selectbox("Statut (Client)", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="stat_c")
+        profession = st.text_input("Profession (Client)", key="prof_c")
+        rev_c = st.number_input("Revenu net annuel (Client) (€)", min_value=0, key="rev_c")
+        
+    with col_pro2:
+        st.subheader("💼 Conjoint")
+        statut_pro_conj = st.selectbox("Statut (Conjoint)", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="stat_conj")
+        profession_conj = st.text_input("Profession (Conjoint)", key="prof_conj")
+        rev_conj = st.number_input("Revenu net annuel (Conjoint) (€)", min_value=0, key="rev_conj")
+else:
+    # Affichage Solo
+    cp1, cp2 = st.columns(2)
+    with cp1:
+        statut_pro = st.selectbox("Statut Professionnel", ["Salarié", "TNS", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"])
+        profession = st.text_input("Profession")
+    with cp2:
+        rev_c = st.number_input("Revenu net annuel (€)", min_value=0)
+
+st.write(" ")
+# Éléments communs au foyer
+c_fisc1, c_fisc2 = st.columns(2)
+with c_fisc1:
+    autres_rev = st.number_input("Autres revenus du foyer (Foncier, etc.) (€)", min_value=0)
+with c_fisc2:
+    tmi = st.selectbox("Tranche Marginale d'Imposition (TMI) du foyer", ["0%", "11%", "30%", "41%", "45%"])
 
 st.markdown("---")
 
-# --- SECTION 4 & 5 : PATRIMOINE IMMOBILIER (Anciennement 3 & 4) ---
+# --- SECTION 4 & 5 : PATRIMOINE IMMOBILIER ---
 st.header("4 & 5. Patrimoine Immobilier")
 tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier (SCPI, SCI, GFV...)"])
 
@@ -147,4 +182,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Sections Coordonnées et Profession ajoutées !")
+st.success("Bilan Foyer Fiscal (Client + Conjoint) prêt !")
