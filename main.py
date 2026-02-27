@@ -20,7 +20,6 @@ with col2:
     st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"], key="situation")
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1, key="nb_enfants")
 
-# Détail des enfants (Remis en place pour ne plus les perdre)
 if nb_enfants > 0:
     st.write("📅 **Détail des enfants :**")
     c_enf = st.columns(3)
@@ -83,16 +82,17 @@ with tab2:
                 st.text_input("Nom du support", key=f"nom_c_{j}")
                 st.selectbox("Mode de détention", ["Pleine Propriété", "Nue-Propriété", "Usufruit", "Via Assurance-Vie", "Via PER"], key=f"det_c_{j}")
             with c2:
-                px_p = st.number_input("Prix de part (€)", min_value=0.0, key=f"px_c_{j}")
-                nb_p = st.number_input("Nombre de parts", min_value=0.0, key=f"nb_c_{j}")
+                val_estim = st.number_input("Valeur estimée (€)", min_value=0, key=f"liq_c_{j}")
+                rev_annuel = st.number_input("Revenus annuels nets (€)", min_value=0, key=f"rev_c_{j}")
             with c3:
-                st.number_input("Valeur de retrait (€)", value=px_p * nb_p, key=f"liq_c_{j}")
+                if val_estim > 0:
+                    st.metric("Rendement estimé", f"{(rev_annuel / val_estim) * 100:.2f} %")
                 if t_coll == "SCPI":
                     st.number_input("TOF (%)", min_value=0.0, max_value=100.0, key=f"tof_c_{j}")
 
 st.markdown("---")
 
-# --- SECTION 6 : PATRIMOINE FINANCIER (RÉORGANISÉ SELON TES 5 FAMILLES) ---
+# --- SECTION 6 : PATRIMOINE FINANCIER (TES 5 FAMILLES) ---
 st.header("6. Patrimoine Financier")
 
 familles_actifs = {
@@ -129,30 +129,17 @@ if total_fin > 0:
 
 st.markdown("---")
 
-# --- SECTION 7 : PRÉVOYANCE ---
-st.header("7. Prévoyance & Protection")
-nb_prev = st.number_input("Nombre de contrats de prévoyance", min_value=0, key="nb_prev")
-for p in range(int(nb_prev)):
-    with st.expander(f"Contrat Prévoyance n°{p+1}"):
-        p1, p2, p3 = st.columns(3)
-        with p1:
-            st.selectbox("Type de garantie", ["Décès", "Rente Éducation", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
-        with p2:
-            st.number_input("Montant Garanti (€)", key=f"p_m_{p}")
-        with p3:
-            st.text_input("Bénéficiaires", key=f"p_b_{p}")
-
-st.markdown("---")
-
-# --- SECTION 8 : SANTÉ ---
-st.header("8. Santé / Mutuelle")
-s1, s2 = st.columns(2)
-with s1:
-    st.text_input("Assureur Santé", key="sante_assur")
-    st.selectbox("Type", ["Individuel", "Collectif", "Madelin"], key="sante_type")
-with s2:
-    st.number_input("Cotisation Annuelle (€)", min_value=0, key="sante_cotis")
+# --- SECTION 7 & 8 : PRÉVOYANCE & SANTÉ ---
+st.header("7 & 8. Prévoyance & Santé")
+col_s1, col_s2 = st.columns(2)
+with col_s1:
+    st.subheader("Prévoyance")
+    st.selectbox("Garantie principale", ["Décès", "Rente Éducation", "IJ (Revenu)", "Invalidité", "Emprunteur"], key="prev_g")
+    st.number_input("Capital/Montant garanti (€)", min_value=0, key="prev_m")
+with col_s2:
+    st.subheader("Santé")
+    st.text_input("Mutuelle / Assureur", key="sante_assur")
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"], key="sante_couv")
 
 st.markdown("---")
-st.success("Analyse prête et sécurisée !")_fin:,.0f} €".replace(",", " "))
+st.success("Analyse prête et sécurisée !")
