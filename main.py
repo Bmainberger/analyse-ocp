@@ -1,5 +1,5 @@
-# --- SECTION 6 : PATRIMOINE FINANCIER (RÉORGANISÉ SELON TES 5 FAMILLES) ---
-st.header("6. Patrimoine Financier")
+import streamlit as st
+from datetime import date
 
 # Définition des familles d'actifs d'après ta liste
 familles_actifs = {
