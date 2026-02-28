@@ -11,6 +11,7 @@ st.markdown("---")
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
+    st.subheader("Le Client")
     nom_client = st.text_input("Nom du Client")
     prenom_client = st.text_input("Prénom du Client")
     date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
@@ -18,10 +19,10 @@ with col1:
     nationalite = st.text_input("Nationalité", key="nat_c") 
 
 with col2:
+    st.subheader("Situation")
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
 
-# Logique Conjoint (Détails conservés)
 if situation in ["Marié(e)", "Pacsé(e)"]:
     st.subheader("Informations du Conjoint")
     c_col1, c_col2 = st.columns(2)
@@ -33,7 +34,6 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
         st.text_input("Prénom du Conjoint", key="pre_conj")
         st.text_input("Nationalité Conjoint", key="nat_conj")
 
-# Détail des enfants (Détails conservés)
 if nb_enfants > 0:
     st.write("📅 **Détail des enfants :**")
     c_enf = st.columns(3)
@@ -107,7 +107,7 @@ with tab2:
 
 st.markdown("---")
 
-# --- SECTION 6 : PATRIMOINE FINANCIER ---
+# --- SECTION 6 : PATRIMOINE FINANCIER (AJOUTS : BANQUE & DATE) ---
 st.header("6. Patrimoine Financier")
 nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, key="nb_f_f")
 total_fin = 0.0
@@ -115,30 +115,33 @@ for k in range(int(nb_fin)):
     with st.expander(f"Contrat n°{k+1}"):
         f1, f2, f3 = st.columns(3)
         with f1:
-            t_f = st.selectbox("Type", ["Livret", "Assurance-Vie", "PER", "PEA", "Compte-Titres"], key=f"typ_f_{k}")
+            st.selectbox("Type", ["Livret", "Assurance-Vie", "PER", "PEA", "Compte-Titres"], key=f"typ_f_{k}")
+            st.text_input("Établissement / Compagnie", key=f"banque_f_{k}")
         with f2:
             m_f = st.number_input("Solde (€)", min_value=0.0, key=f"m_f_{k}")
             total_fin += m_f
+            st.date_input("Date d'adhésion", key=f"date_f_{k}")
         with f3:
-            if t_f in ["Assurance-Vie", "PER"]:
-                st.selectbox("Support", ["Mono-support", "Multi-support"], key=f"gest_f_{k}")
+            st.selectbox("Support / Gestion", ["Mono-support", "Multi-support", "Gestion Pilotée"], key=f"gest_f_{k}")
 if total_fin > 0:
     st.metric("Total Épargne Financière", f"{total_fin:,.0f} €".replace(",", " "))
 
 st.markdown("---")
 
-# --- SECTION 7 : PRÉVOYANCE ---
+# --- SECTION 7 : PRÉVOYANCE (AJOUT : QUOTITÉ) ---
 st.header("7. Prévoyance & Protection")
 nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0, key="nb_p_v")
 for p in range(int(nb_prev_input)):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
         p1, p2, p3 = st.columns(3)
         with p1:
-            st.selectbox("Type de garantie", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
+            type_p = st.selectbox("Type de garantie", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
         with p2:
             st.number_input("Montant Garanti (€)", key=f"p_m_{p}")
+            if type_p == "Emprunteur":
+                st.number_input("Quotité assurée (%)", min_value=0, max_value=100, value=100, key=f"p_q_{p}")
         with p3:
-            st.text_input("Bénéficiaires / Enfants", key=f"p_b_{p}")
+            st.text_input("Bénéficiaires / Organisme", key=f"p_b_{p}")
 
 st.markdown("---")
 
@@ -153,4 +156,4 @@ with s2:
     st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+"])
 
 st.markdown("---")
-st.success("Bilan complet opérationnel !")
+st.success("Toutes les sections sont opérationnelles !")
