@@ -7,21 +7,26 @@ st.set_page_config(page_title="OCP Patrimoine - Bilan Complet", page_icon="🛡�
 st.title("🛡️ OCP Patrimoine - Bilan et Analyse Global")
 st.markdown("---")
 
+# --- INITIALISATION DES TOTAUX ---
+total_brut_immo = 0.0
+total_brut_fin = 0.0
+total_passif = 0.0
+
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Le Client")
-    nom_client = st.text_input("Nom du Client")
-    prenom_client = st.text_input("Prénom du Client")
-    date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
-    lieu_naissance = st.text_input("Lieu de naissance", key="lieu_c")
-    nationalite = st.text_input("Nationalité", key="nat_c") 
+    st.text_input("Nom du Client", key="nom_c")
+    st.text_input("Prénom du Client", key="pre_c")
+    st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
+    st.text_input("Lieu de naissance", key="lieu_c")
+    st.text_input("Nationalité", key="nat_c") 
 
 with col2:
     st.subheader("Situation")
-    situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
-    nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1)
+    situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"], key="sit_mat")
+    nb_enfants = st.number_input("Nombre d'enfants à charge", min_value=0, max_value=15, step=1, key="nb_e")
 
 if situation in ["Marié(e)", "Pacsé(e)"]:
     st.markdown("---")
@@ -48,11 +53,11 @@ st.markdown("---")
 st.header("2. Coordonnées")
 c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1])
 with c_coo1:
-    st.text_input("Adresse postale complète")
+    st.text_input("Adresse postale complète", key="adr_p")
 with c_coo2:
-    st.text_input("Téléphone")
+    st.text_input("Téléphone", key="tel_p")
 with c_coo3:
-    st.text_input("Email")
+    st.text_input("Email", key="mail_p")
 
 st.markdown("---")
 
@@ -60,14 +65,14 @@ st.markdown("---")
 st.header("3. Situation Professionnelle & Revenus")
 cp1, cp2, cp3 = st.columns(3)
 with cp1:
-    st.selectbox("Statut Professionnel", ["Salarié", "TNS / Libéral", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"])
-    st.text_input("Profession / Intitulé du poste")
+    st.selectbox("Statut Professionnel", ["Salarié", "TNS / Libéral", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="statut_pro")
+    st.text_input("Profession / Intitulé du poste", key="poste_pro")
 with cp2:
-    st.number_input("Revenu net annuel (€)", min_value=0)
-    st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0)
+    rev_annuel = st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
+    foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
-    st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"])
-    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64)
+    st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
+    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 st.markdown("---")
 
@@ -81,11 +86,12 @@ with tab1:
         with st.expander(f"Bien n°{i+1}", expanded=True):
             c1, c2 = st.columns(2)
             with c1:
-                st.selectbox(f"Type de bien {i+1}", ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking", "Immeuble de rapport"], key=f"type_i_{i}")
-                st.number_input(f"Valeur vénale (€) {i+1}", min_value=0, key=f"val_i_{i}")
+                st.selectbox(f"Type de bien", ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking", "Immeuble de rapport"], key=f"type_i_{i}")
+                val_i = st.number_input(f"Valeur vénale (€)", min_value=0.0, key=f"val_i_{i}")
+                total_brut_immo += val_i
             with c2:
-                st.selectbox(f"Régime / Dispositif fiscal {i+1}", ["Droit Commun (Nu)", "LMNP", "LMP", "Pinel", "Malraux", "Monument Historique"], key=f"fisc_i_{i}")
-                st.radio(f"Crédit en cours ? {i+1}", ["Non", "Oui"], key=f"cred_i_{i}")
+                st.selectbox(f"Régime fiscal", ["Droit Commun (Nu)", "LMNP", "LMP", "Pinel", "Malraux", "Monument Historique"], key=f"fisc_i_{i}")
+                st.radio(f"Crédit en cours ?", ["Non", "Oui"], key=f"cred_i_{i}")
 
 with tab2:
     nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, key="nb_p_c")
@@ -99,7 +105,9 @@ with tab2:
             with c2:
                 px_p = st.number_input("Prix de part (€)", min_value=0.0, key=f"px_c_{j}")
                 nb_p = st.number_input("Nombre de parts", min_value=0.0, key=f"nb_c_{j}")
-                st.number_input("Valeur de retrait (€)", value=px_p * nb_p, key=f"liq_c_{j}")
+                val_liq = px_p * nb_p
+                st.write(f"Valeur estimée : {val_liq:,.0f} €")
+                total_brut_immo += val_liq
             with c3:
                 if t_coll == "SCPI":
                     st.number_input("TOF (%)", min_value=0.0, max_value=100.0, key=f"tof_c_{j}")
@@ -111,7 +119,6 @@ st.markdown("---")
 # --- SECTION 6 : PATRIMOINE FINANCIER ---
 st.header("6. Patrimoine Financier")
 nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, key="nb_f_f")
-total_fin = 0.0
 for k in range(int(nb_fin)):
     with st.expander(f"Contrat n°{k+1}"):
         f1, f2, f3 = st.columns(3)
@@ -120,12 +127,10 @@ for k in range(int(nb_fin)):
             st.text_input("Établissement / Compagnie", key=f"banque_f_{k}")
         with f2:
             m_f = st.number_input("Solde (€)", min_value=0.0, key=f"m_f_{k}")
-            total_fin += m_f
+            total_brut_fin += m_f
             st.date_input("Date d'adhésion", key=f"date_f_{k}")
         with f3:
             st.selectbox("Support / Gestion", ["Mono-support", "Multi-support", "Gestion Pilotée"], key=f"gest_f_{k}")
-if total_fin > 0:
-    st.metric("Total Épargne Financière", f"{total_fin:,.0f} €".replace(",", " "))
 
 st.markdown("---")
 
@@ -150,16 +155,57 @@ st.markdown("---")
 st.header("8. Santé / Mutuelle")
 s1, s2, s3 = st.columns(3)
 with s1:
-    st.text_input("Assureur Santé / Mutuelle", key="sante_org")
-    st.selectbox("Type de contrat", ["Individuel", "Collectif (Entreprise)", "Madelin (TNS)"], key="sante_type")
-    st.date_input("Date d'échéance du contrat", key="sante_ech")
+    st.text_input("Assureur Santé / Mutuelle", key="s_org")
+    st.selectbox("Type de contrat", ["Individuel", "Collectif", "Madelin"], key="s_typ")
+    st.date_input("Date d'échéance", key="s_ech")
 with s2:
-    st.number_input("Cotisation (€)", min_value=0, key="sante_cot")
-    st.selectbox("Périodicité", ["Mensuelle", "Trimestrielle", "Annuelle"], key="sante_per")
-    st.select_slider("Niveau de couverture global", options=["100%", "200%", "300%", "400%+", "Frais réels"], key="sante_niv")
+    st.number_input("Cotisation (€)", min_value=0.0, key="s_cot")
+    st.selectbox("Périodicité", ["Mensuelle", "Trimestrielle", "Annuelle"], key="s_per")
+    st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+", "Frais réels"], key="s_niv")
 with s3:
-    st.multiselect("Personnes couvertes", ["Client", "Conjoint", "Enfant(s)"], default=["Client"], key="sante_couv")
-    st.text_area("Notes (Renforts optique/dentaire...)", height=100, key="sante_notes")
+    st.multiselect("Personnes couvertes", ["Client", "Conjoint", "Enfant(s)"], default=["Client"], key="s_couv")
+    st.text_area("Notes (Renforts...)", height=100, key="s_notes")
 
 st.markdown("---")
-st.success("Bilan complet opérationnel ! Prêt pour l'étape suivante.")
+
+# --- SECTION 9 : PASSIF & ENDETTEMENT ---
+st.header("9. Passif & Endettement")
+tab_p1, tab_p2 = st.tabs(["🏠 Crédits Immobiliers", "💳 Crédits Conso & Autres"])
+
+with tab_p1:
+    nb_pret_immo = st.number_input("Nombre de crédits immobiliers", min_value=0, key="nb_p_immo")
+    for i in range(int(nb_pret_immo)):
+        with st.expander(f"Crédit Immo n°{i+1}"):
+            cp1, cp2, cp3 = st.columns(3)
+            with cp1:
+                st.text_input("Banque prêteuse", key=f"ban_p_{i}")
+                st.selectbox("Type de prêt", ["Amortissable", "In Fine", "Relais"], key=f"typ_p_{i}")
+            with cp2:
+                crdu = st.number_input("Capital Restant Dû (€)", min_value=0.0, key=f"crdu_p_{i}")
+                total_passif += crdu
+                st.number_input("Taux nominal (%)", min_value=0.0, key=f"taux_p_{i}")
+            with cp3:
+                st.number_input("Mensualité (€)", min_value=0.0, key=f"mens_p_{i}")
+                st.date_input("Date de fin", key=f"fin_p_{i}")
+
+with tab_p2:
+    nb_pret_conso = st.number_input("Nombre d'autres crédits", min_value=0, key="nb_p_conso")
+    for j in range(int(nb_pret_conso)):
+        with st.expander(f"Dette n°{j+1}"):
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                st.selectbox("Nature", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{j}")
+            with cc2:
+                solde_dette = st.number_input("Montant restant à rembourser (€)", min_value=0.0, key=f"solde_c_{j}")
+                total_passif += solde_dette
+
+# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
+st.sidebar.title("📊 Synthèse Patrimoniale")
+pat_brut = total_brut_immo + total_brut_fin
+st.sidebar.metric("Patrimoine Brut", f"{pat_brut:,.0f} €".replace(",", " "))
+st.sidebar.metric("Total Dettes", f"{total_passif:,.0f} €".replace(",", " "), delta_color="inverse")
+st.sidebar.markdown("---")
+st.sidebar.metric("PATRIMOINE NET", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
+
+st.markdown("---")
+st.success("Bilan Complet enregistré !")
