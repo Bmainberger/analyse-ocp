@@ -20,7 +20,6 @@ with col2:
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"])
     nb_enfants = st.number_input("Nombre d'enfants", min_value=0, step=1)
 
-# Logique Conjoint : Nationalité et Lieu de naissance inclus ici aussi
 if situation in ["Marié(e)", "Pacsé(e)"]:
     st.markdown("---")
     st.subheader("Informations du Conjoint")
@@ -33,7 +32,6 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
         st.text_input("Nationalité Conjoint", key="nat_conj")
         st.text_input("Lieu de naissance Conjoint", key="lieu_conj")
 
-# Liste des enfants
 if nb_enfants > 0:
     st.subheader("Détails des Enfants")
     cols_enf = st.columns(3)
@@ -43,9 +41,7 @@ if nb_enfants > 0:
 # --- 4 & 5. PATRIMOINE IMMOBILIER (2 BRANCHES) ---
 st.markdown("---")
 st.header("4 & 5. Patrimoine Immobilier")
-
 col_immo1, col_immo2 = st.columns(2)
-
 with col_immo1:
     st.subheader("🏠 Branche A : Immobilier Physique")
     nb_phys = st.number_input("Nombre de biens physiques", min_value=0, step=1, key="nb_p")
@@ -53,7 +49,6 @@ with col_immo1:
         with st.expander(f"Bien n°{p+1}"):
             st.selectbox("Usage", ["Résidence Principale", "Résidence Secondaire", "Locatif"], key=f"u_p_{p}")
             st.number_input("Valeur estimée (€)", min_value=0, key=f"v_p_{p}")
-
 with col_immo2:
     st.subheader("📄 Branche B : Pierre Papier")
     nb_pap = st.number_input("Nombre de placements (SCPI, etc.)", min_value=0, step=1, key="nb_pap")
@@ -66,7 +61,7 @@ with col_immo2:
 # --- 6. PATRIMOINE FINANCIER ---
 st.markdown("---")
 st.header("6. Patrimoine Financier")
-nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, step=1)
+nb_fin = st.number_input("Nombre de comptes financiers", min_value=0, step=1)
 for f in range(int(nb_fin)):
     with st.expander(f"Contrat n°{f+1}"):
         st.selectbox("Catégorie", ["Liquidités", "Épargne Logement", "Assurance-Vie", "PEA", "Retraite", "Cryptos"], key=f"cat_f_{f}")
