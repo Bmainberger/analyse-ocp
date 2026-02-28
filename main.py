@@ -17,11 +17,11 @@ st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Le Client")
-    st.text_input("Nom du Client", key="nom_c")
-    st.text_input("Prénom du Client", key="pre_c")
-    st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
-    st.text_input("Lieu de naissance", key="lieu_c")
-    st.text_input("Nationalité", key="nat_c") 
+    nom_client = st.text_input("Nom du Client", key="nom_c")
+    prenom_client = st.text_input("Prénom du Client", key="pre_c")
+    date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
+    lieu_naissance = st.text_input("Lieu de naissance", key="lieu_c")
+    nationalite = st.text_input("Nationalité", key="nat_c") 
 
 with col2:
     st.subheader("Situation")
@@ -33,11 +33,11 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
     st.subheader("Informations du Conjoint")
     c_col1, c_col2 = st.columns(2)
     with c_col1:
-        st.text_input("Nom du Conjoint", key="nom_conj")
-        st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
+        nom_conj = st.text_input("Nom du Conjoint", key="nom_conj")
+        dnaiss_conj = st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
         st.text_input("Lieu de naissance conjoint", key="lieu_conj")
     with c_col2:
-        st.text_input("Prénom du Conjoint", key="pre_conj")
+        pre_conj = st.text_input("Prénom du Conjoint", key="pre_conj")
         st.text_input("Nationalité Conjoint", key="nat_conj")
 
 if nb_enfants > 0:
@@ -69,9 +69,9 @@ with cp1:
     st.text_input("Profession / Intitulé du poste", key="poste_pro")
 with cp2:
     rev_annuel = st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
-    foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
+    st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
-    st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
+    tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
     st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 st.markdown("---")
@@ -155,7 +155,7 @@ st.markdown("---")
 st.header("8. Santé / Mutuelle")
 s1, s2, s3 = st.columns(3)
 with s1:
-    st.text_input("Assureur Santé / Mutuelle", key="s_org")
+    s_org = st.text_input("Assureur Santé / Mutuelle", key="s_org")
     st.selectbox("Type de contrat", ["Individuel", "Collectif", "Madelin"], key="s_typ")
     st.date_input("Date d'échéance", key="s_ech")
 with s2:
@@ -194,18 +194,4 @@ with tab_p2:
         with st.expander(f"Dette n°{j+1}"):
             cc1, cc2 = st.columns(2)
             with cc1:
-                st.selectbox("Nature", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{j}")
-            with cc2:
-                solde_dette = st.number_input("Montant restant à rembourser (€)", min_value=0.0, key=f"solde_c_{j}")
-                total_passif += solde_dette
-
-# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
-st.sidebar.title("📊 Synthèse Patrimoniale")
-pat_brut = total_brut_immo + total_brut_fin
-st.sidebar.metric("Patrimoine Brut", f"{pat_brut:,.0f} €".replace(",", " "))
-st.sidebar.metric("Total Dettes", f"{total_passif:,.0f} €".replace(",", " "), delta_color="inverse")
-st.sidebar.markdown("---")
-st.sidebar.metric("PATRIMOINE NET", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
-
-st.markdown("---")
-st.success("Bilan Complet enregistré !")
+                st.selectbox("Nature", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{
