@@ -194,4 +194,45 @@ with tab_p2:
         with st.expander(f"Dette n°{j+1}"):
             cc1, cc2 = st.columns(2)
             with cc1:
-                st.selectbox("Nature", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{
+                st.selectbox("Nature", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{j}")
+            with cc2:
+                solde_dette = st.number_input("Montant restant à rembourser (€)", min_value=0.0, key=f"solde_c_{j}")
+                total_passif += solde_dette
+
+# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
+st.sidebar.title("📊 Synthèse Patrimoniale")
+pat_brut = total_brut_immo + total_brut_fin
+st.sidebar.metric("Patrimoine Brut", f"{pat_brut:,.0f} €".replace(",", " "))
+st.sidebar.metric("Total Dettes", f"{total_passif:,.0f} €".replace(",", " "), delta_color="inverse")
+st.sidebar.markdown("---")
+st.sidebar.metric("PATRIMOINE NET", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
+
+# --- SECTION 10 : RÉSUMÉ FINAL ---
+st.markdown("---")
+if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+    st.success("Analyse OCP terminée !")
+    r1, r2 = st.columns(2)
+    with r1:
+        st.subheader("📋 État Civil")
+        st.write(f"**Client :** {prenom_client} {nom_client}")
+        st.write(f"**Situation :** {situation}")
+        if situation in ["Marié(e)", "Pacsé(e)"]:
+            st.write(f"**Conjoint :** {pre_conj} {nom_conj}")
+    with r2:
+        st.subheader("💰 Bilan Chiffré")
+        st.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €".replace(",", " "))
+        st.write(f"**Total Passif :** {total_passif:,.0f} €".replace(",", " "))
+        st.metric("NET PATRIMONIAL", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
+    
+    st.markdown("---")
+    r3, r4 = st.columns(2)
+    with r3:
+        st.subheader("📈 Profil & Fiscalité")
+        st.write(f"**Revenu Annuel :** {rev_annuel:,.0f} €".replace(",", " "))
+        st.write(f"**TMI :** {tmi_c}")
+    with r4:
+        st.subheader("🛡️ Protection")
+        st.write(f"**Contrat Santé :** {s_org if s_org else 'Non saisi'}")
+        st.write(f"**Épargne de précaution :** {total_brut_fin:,.0f} €".replace(",", " "))
+
+st.success("Bilan complet enregistré !")
