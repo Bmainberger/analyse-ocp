@@ -7,12 +7,13 @@ st.set_page_config(page_title="OCP Patrimoine - Bilan Complet", page_icon="🛡�
 st.title("🛡️ OCP Patrimoine - Bilan et Analyse Global")
 st.markdown("---")
 
-# --- INITIALISATION DES TOTAUX ---
+# --- INITIALISATION DES TOTAUX & VARIABLES ---
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
-total_charges_mensuelles = 0.0
-revenus_mensuels_totaux = 0.0
+mensualites_totales = 0.0  # Pour le calcul du budget
+pre_conj = ""
+nom_conj = ""
 
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
@@ -37,132 +38,238 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
     with c_col1:
         nom_conj = st.text_input("Nom du Conjoint", key="nom_conj")
         dnaiss_conj = st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
+        st.text_input("Lieu de naissance conjoint", key="lieu_conj")
     with c_col2:
         pre_conj = st.text_input("Prénom du Conjoint", key="pre_conj")
         st.text_input("Nationalité Conjoint", key="nat_conj")
 
+if nb_enfants > 0:
+    st.write("📅 **Détail des enfants :**")
+    c_enf = st.columns(3)
+    for i in range(int(nb_enfants)):
+        with c_enf[i % 3]:
+            st.date_input(f"Date de naissance Enfant n°{i+1}", value=date(2010, 1, 1), key=f"dnaiss_enf_{i}")
+
 st.markdown("---")
 
-# --- SECTION 3 : REVENUS & BUDGET ---
-st.header("3. Revenus, Charges & Capacité d'Épargne")
-b1, b2, b3 = st.columns(3)
+# --- SECTION 2 : COORDONNÉES ---
+st.header("2. Coordonnées")
+c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1])
+with c_coo1:
+    st.text_input("Adresse postale complète", key="adr_p")
+with c_coo2:
+    st.text_input("Téléphone", key="tel_p")
+with c_coo3:
+    st.text_input("Email", key="mail_p")
 
-with b1:
-    st.subheader("💰 Revenus Mensuels")
-    rev_pro = st.number_input("Salaires / BNC / Dividendes (net)", min_value=0.0, key="rev_pro_m")
-    rev_fonc = st.number_input("Revenus Fonciers (net)", min_value=0.0, key="rev_fonc_m")
-    revenus_mensuels_totaux = rev_pro + rev_fonc
-    st.info(f"Total Revenus : {revenus_mensuels_totaux:,.0f} € / mois")
+st.markdown("---")
 
-with b2:
-    st.subheader("💸 Charges Mensuelles")
-    loyer_mens = st.number_input("Loyer / Charges Copro", min_value=0.0, key="loyer_m")
-    impots_mens = st.number_input("Impôts (Mensualisés)", min_value=0.0, key="imp_m")
-    vie_courante = st.number_input("Train de vie (Alim, Loisirs...)", min_value=0.0, key="vie_m")
-    total_charges_mensuelles = loyer_mens + impots_mens + vie_courante
+# --- SECTION 3 : PROFESSION & REVENUS ---
+st.header("3. Situation Professionnelle & Revenus")
+cp1, cp2, cp3 = st.columns(3)
+with cp1:
+    st.selectbox("Statut Professionnel", ["Salarié", "TNS / Libéral", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="statut_pro")
+    st.text_input("Profession / Intitulé du poste", key="poste_pro")
+with cp2:
+    rev_annuel = st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
+    rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
+with cp3:
+    tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
+    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
-with b3:
-    st.subheader("📊 Capacité d'Épargne")
-    capacite_brute = revenus_mensuels_totaux - total_charges_mensuelles
-    if capacite_brute > 0:
-        st.metric("Reste à vivre", f"{capacite_brute:,.0f} €", delta="Positif")
-    else:
-        st.metric("Reste à vivre", f"{capacite_brute:,.0f} €", delta="Négatif", delta_color="inverse")
-    st.caption("Note : Les mensualités de crédits seront déduites automatiquement dans la synthèse.")
+# --- SECTION 3 BIS : BUDGET MENSUEL (AJOUT) ---
+st.subheader("📊 3. bis Budget & Capacité d'Épargne")
+b_col1, b_col2 = st.columns(2)
+with b_col1:
+    vie_courante = st.number_input("Train de vie mensuel (€) (Alim, Transport, Loisirs...)", min_value=0.0, key="budget_vie")
+    loyer_mens = st.number_input("Loyer ou Charges de copropriété (€)", min_value=0.0, key="budget_loyer")
+with b_col2:
+    impots_mens = st.number_input("Impôts mensuels (€) (Prélèvement à la source...)", min_value=0.0, key="budget_impot")
+    # Calcul des revenus mensuels pour le budget
+    rev_mensuel_estim = (rev_annuel + rev_foncier) / 12
+    reste_vivre_brut = rev_mensuel_estim - (vie_courante + loyer_mens + impots_mens)
+    st.info(f"Revenus mensuels estimés : {rev_mensuel_estim:,.0f} €")
 
 st.markdown("---")
 
 # --- SECTION 4 & 5 : PATRIMOINE IMMOBILIER ---
 st.header("4 & 5. Patrimoine Immobilier")
-tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier"])
+tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier (SCPI, SCI, GFV...)"])
 
 with tab1:
-    nb_biens = st.number_input("Nombre de biens immobiliers", min_value=0, key="nb_p_p")
+    nb_biens = st.number_input("Nombre de biens immobiliers physiques", min_value=0, key="nb_p_p")
     for i in range(int(nb_biens)):
         with st.expander(f"Bien n°{i+1}", expanded=True):
-            v1, v2 = st.columns(2)
-            with v1:
-                st.selectbox(f"Type {i}", ["Résidence Principale", "Résidence Secondaire", "Investissement Locatif"], key=f"t_i_{i}")
-                val_i = st.number_input(f"Valeur (€) {i}", min_value=0.0, key=f"v_i_{i}")
+            c1, c2 = st.columns(2)
+            with c1:
+                st.selectbox(f"Type de bien {i}", ["Résidence Principale", "Résidence Secondaire", "Appartement", "Maison", "Terrain", "Parking", "Immeuble de rapport"], key=f"type_i_{i}")
+                val_i = st.number_input(f"Valeur vénale (€) {i}", min_value=0.0, key=f"val_i_{i}")
                 total_brut_immo += val_i
-            with v2:
-                st.selectbox(f"Régime {i}", ["Nu", "LMNP", "Pinel"], key=f"f_i_{i}")
+            with c2:
+                st.selectbox(f"Régime fiscal {i}", ["Droit Commun (Nu)", "LMNP", "LMP", "Pinel", "Malraux", "Monument Historique"], key=f"fisc_i_{i}")
+                st.radio(f"Crédit en cours ? {i}", ["Non", "Oui"], key=f"cred_i_{i}")
 
 with tab2:
-    nb_coll = st.number_input("Nombre de SCPI/SCI", min_value=0, key="nb_p_c")
+    nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, key="nb_p_c")
     for j in range(int(nb_coll)):
-        with st.expander(f"Placement Collectif n°{j+1}"):
-            px_p = st.number_input(f"Prix part {j}", min_value=0.0, key=f"px_{j}")
-            nb_p = st.number_input(f"Nb parts {j}", min_value=0.0, key=f"nb_{j}")
-            total_brut_immo += (px_p * nb_p)
+        with st.expander(f"Placement Collectif n°{j+1}", expanded=True):
+            t_coll = st.selectbox(f"Type de support {j}", ["SCPI", "SCI", "OPCI", "GFV / GFI", "Club Deal"], key=f"type_c_{j}")
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.text_input(f"Nom du support {j}", key=f"nom_c_{j}")
+                st.selectbox(f"Mode de détention {j}", ["Pleine Propriété", "Nue-Propriété", "Usufruit", "Via Assurance-Vie", "Via PER"], key=f"det_c_{j}")
+            with c2:
+                px_p = st.number_input(f"Prix de part (€) {j}", min_value=0.0, key=f"px_c_{j}")
+                nb_p = st.number_input(f"Nombre de parts {j}", min_value=0.0, key=f"nb_c_{j}")
+                val_liq = px_p * nb_p
+                st.write(f"Valeur estimée : {val_liq:,.0f} €")
+                total_brut_immo += val_liq
+            with c3:
+                if t_coll == "SCPI":
+                    st.number_input(f"TOF (%) {j}", min_value=0.0, max_value=100.0, key=f"tof_c_{j}")
+                elif t_coll == "GFV / GFI":
+                    st.text_input(f"Surface / Exploitation {j}", key=f"surf_c_{j}")
 
 st.markdown("---")
 
-# --- SECTION 6 : FINANCIER ---
+# --- SECTION 6 : PATRIMOINE FINANCIER ---
 st.header("6. Patrimoine Financier")
-nb_fin = st.number_input("Nombre de contrats", min_value=0, key="nb_f")
+nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, key="nb_f_f")
 for k in range(int(nb_fin)):
     with st.expander(f"Contrat n°{k+1}"):
-        f1, f2 = st.columns(2)
+        f1, f2, f3 = st.columns(3)
         with f1:
-            st.selectbox(f"Type {k}", ["Livret", "Assurance-Vie", "PEA", "PER"], key=f"tf_{k}")
-            st.text_input(f"Banque {k}", key=f"bf_{k}")
+            st.selectbox(f"Type {k}", ["Livret", "Assurance-Vie", "PER", "PEA", "Compte-Titres"], key=f"typ_f_{k}")
+            st.text_input(f"Établissement {k}", key=f"banque_f_{k}")
         with f2:
-            solde_f = st.number_input(f"Solde (€) {k}", min_value=0.0, key=f"sf_{k}")
-            total_brut_fin += solde_f
+            m_f = st.number_input(f"Solde (€) {k}", min_value=0.0, key=f"m_f_{k}")
+            total_brut_fin += m_f
+            st.date_input(f"Date d'adhésion {k}", key=f"date_f_{k}")
+        with f3:
+            st.selectbox(f"Support {k}", ["Mono-support", "Multi-support", "Gestion Pilotée"], key=f"gest_f_{k}")
 
 st.markdown("---")
 
-# --- SECTION 7 & 8 : PROTECTION & SANTÉ ---
-st.header("7 & 8. Prévoyance & Santé")
-s_org = st.text_input("Assureur Santé", key="s_org")
-nb_prev = st.number_input("Nombre de contrats Prévoyance", min_value=0, key="nb_prev")
-for p in range(int(nb_prev)):
-    st.selectbox(f"Garantie {p}", ["Décès", "IJ", "Emprunteur"], key=f"gt_{p}")
+# --- SECTION 7 : PRÉVOYANCE ---
+st.header("7. Prévoyance & Protection")
+nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0, key="nb_p_v")
+for p in range(int(nb_prev_input)):
+    with st.expander(f"Contrat Prévoyance n°{p+1}"):
+        p1, p2, p3 = st.columns(3)
+        with p1:
+            type_p = st.selectbox(f"Type de garantie {p}", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
+        with p2:
+            st.number_input(f"Montant Garanti (€) {p}", key=f"p_m_{p}")
+            if type_p == "Emprunteur":
+                st.number_input(f"Quotité (%) {p}", min_value=0, max_value=100, value=100, key=f"p_q_{p}")
+        with p3:
+            st.text_input(f"Bénéficiaires {p}", key=f"p_b_{p}")
 
 st.markdown("---")
 
-# --- SECTION 9 : PASSIF (CRÉDITS) ---
-st.header("9. Passif & Mensualités")
-nb_p_immo = st.number_input("Nombre de crédits immo", min_value=0, key="nb_p_i")
-mensualites_totales = 0.0
-for m in range(int(nb_p_immo)):
-    with st.expander(f"Crédit n°{m+1}"):
-        m1, m2 = st.columns(2)
-        with m1:
-            crd_p = st.number_input(f"Restant Dû {m}", min_value=0.0, key=f"crd_{m}")
-            total_passif += crd_p
-        with m2:
-            mens_p = st.number_input(f"Mensualité {m}", min_value=0.0, key=f"mens_{m}")
-            mensualites_totales += mens_p
+# --- SECTION 8 : SANTÉ / MUTUELLE ---
+st.header("8. Santé / Mutuelle")
+s1, s2, s3 = st.columns(3)
+with s1:
+    s_org = st.text_input("Assureur Santé", key="s_org")
+    st.selectbox("Type de contrat", ["Individuel", "Collectif", "Madelin"], key="s_typ")
+    st.date_input("Date d'échéance", key="s_ech")
+with s2:
+    st.number_input("Cotisation (€)", min_value=0.0, key="s_cot")
+    st.selectbox("Périodicité", ["Mensuelle", "Trimestrielle", "Annuelle"], key="s_per")
+    st.select_slider("Niveau de couverture", options=["100%", "200%", "300%", "400%+", "Frais réels"], key="s_niv")
+with s3:
+    st.multiselect("Personnes couvertes", ["Client", "Conjoint", "Enfant(s)"], default=["Client"], key="s_couv")
+    st.text_area("Notes", height=100, key="s_notes")
 
 st.markdown("---")
 
-# --- SECTION 11 : OBJECTIFS ---
-st.header("🎯 11. Objectifs")
-obj_prioritaires = st.multiselect("Priorités", ["Retraite", "Fiscalité", "Transmission", "Revenus"], key="objs")
+# --- SECTION 9 : PASSIF & ENDETTEMENT ---
+st.header("9. Passif & Endettement")
+tab_p1, tab_p2 = st.tabs(["🏠 Crédits Immobiliers", "💳 Crédits Conso & Autres"])
 
-# --- CALCULS BARRE LATÉRALE ---
+with tab_p1:
+    nb_pret_immo = st.number_input("Nombre de crédits immobiliers", min_value=0, key="nb_p_immo")
+    for i in range(int(nb_pret_immo)):
+        with st.expander(f"Crédit Immo n°{i+1}"):
+            cp1, cp2, cp3 = st.columns(3)
+            with cp1:
+                st.text_input(f"Banque {i}", key=f"ban_p_{i}")
+                st.selectbox(f"Type {i}", ["Amortissable", "In Fine", "Relais"], key=f"typ_p_{i}")
+            with cp2:
+                crdu = st.number_input(f"Restant Dû (€) {i}", min_value=0.0, key=f"crdu_p_{i}")
+                total_passif += crdu
+                st.number_input(f"Taux (%) {i}", min_value=0.0, key=f"taux_p_{i}")
+            with cp3:
+                m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
+                mensualites_totales += m_mens
+                st.date_input(f"Date fin {i}", key=f"fin_p_{i}")
+
+with tab_p2:
+    nb_pret_conso = st.number_input("Nombre d'autres crédits", min_value=0, key="nb_p_conso")
+    for j in range(int(nb_pret_conso)):
+        with st.expander(f"Dette n°{j+1}"):
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                st.selectbox(f"Nature {j}", ["Prêt Personnel", "LOA / LLD", "Crédit Renouvelable", "Dette familiale", "Découvert"], key=f"nat_c_{j}")
+            with cc2:
+                solde_dette = st.number_input(f"Reste à payer (€) {j}", min_value=0.0, key=f"solde_c_{j}")
+                total_passif += solde_dette
+
+# --- SECTION 11 : OBJECTIFS DU CLIENT ---
+st.markdown("---")
+st.header("🎯 11. Objectifs & Priorités")
+col_obj1, col_obj2 = st.columns(2)
+with col_obj1:
+    obj_prioritaires = st.multiselect(
+        "Quels sont les objectifs principaux ?",
+        ["Préparer la Retraite", "Réduire la fiscalité (Impôts)", "Protéger la famille", 
+         "Transmettre un capital", "Développer l'immobilier", "Revenus immédiats"],
+        key="obj_multi"
+    )
+with col_obj2:
+    horizon = st.select_slider("Horizon", options=["Court terme", "Moyen terme", "Long terme", "Transmission"], key="horizon_p")
+    profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
+
+# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
+st.sidebar.title("📊 Synthèse Patrimoniale")
 pat_brut = total_brut_immo + total_brut_fin
 pat_net = pat_brut - total_passif
-epargne_mensuelle_reelle = capacite_brute - mensualites_totales
+capa_epargne = reste_vivre_brut - mensualites_totales
 
-st.sidebar.title("📊 Synthèse")
 st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
-st.sidebar.metric("CAPACITÉ ÉPARGNE", f"{epargne_mensuelle_reelle:,.0f} €/mois".replace(",", " "))
+st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois", delta="Flux libre")
+st.sidebar.markdown("---")
+st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
+st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
 
-# --- RÉSUMÉ FINAL ---
-if st.button("🚀 GÉNÉRER LE RÉSUMÉ FINAL"):
-    st.header("📋 Résumé de l'Audit OCP")
+# --- SECTION 10 : RÉSUMÉ FINAL ---
+st.markdown("---")
+if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+    st.success("Analyse OCP terminée !")
     r1, r2 = st.columns(2)
     with r1:
-        st.subheader("👤 Client")
-        st.write(f"**Nom :** {nom_client} {prenom_client}")
-        st.write(f"**Patrimoine Net :** {pat_net:,.0f} €".replace(",", " "))
+        st.subheader("📋 État Civil")
+        st.write(f"**Client :** {prenom_client} {nom_client}")
+        st.write(f"**Situation :** {situation}")
+        if situation in ["Marié(e)", "Pacsé(e)"]:
+            st.write(f"**Conjoint :** {pre_conj} {nom_conj}")
     with r2:
-        st.subheader("💰 Flux Mensuels")
-        st.write(f"**Revenus :** {revenus_mensuels_totaux:,.0f} €")
-        st.write(f"**Mensualités crédits :** {mensualites_totales:,.0f} €")
-        st.metric("Épargne Mensuelle Réelle", f"{epargne_mensuelle_reelle:,.0f} €")
+        st.subheader("💰 Bilan Chiffré")
+        st.metric("NET PATRIMONIAL", f"{pat_net:,.0f} €".replace(",", " "))
+        st.metric("ÉPARGNE MENSUELLE LIBRE", f"{capa_epargne:,.0f} €")
     
-    st.success("Analyse terminée. Vous pouvez maintenant conseiller sur l'allocation de cette épargne !")
+    st.markdown("---")
+    r3, r4 = st.columns(2)
+    with r3:
+        st.subheader("🎯 Objectifs & Profil")
+        if obj_prioritaires:
+            st.write(f"**Priorités :** {', '.join(obj_prioritaires)}")
+        st.write(f"**Horizon :** {horizon}")
+        st.write(f"**Profil :** {profil_r}")
+    with r4:
+        st.subheader("🛡️ Protection")
+        st.write(f"**Contrat Santé :** {s_org if s_org else 'Non saisi'}")
+        st.write(f"**Épargne dispo :** {total_brut_fin:,.0f} €".replace(",", " "))
+
+st.info("Bilan complet prêt.")
