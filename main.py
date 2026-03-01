@@ -272,12 +272,52 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
-# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
-    st.header("🏁 Terminer mon bilan")
-    st.write("Cliquez ci-dessous pour transmettre votre dossier complet à OCP Patrimoine.")
 
+    # --- SECTION ENVOI FINAL ---
+if not st.session_state.get('is_expert', False):
+    st.markdown("---")
+    
+    mon_email = "bmainberger@ocp-patrimoine.com" 
+
+    # Construction du résumé invisible (C'est ce que vous recevrez)
+    corps_mail = f"""
+    DOSSIER COMPLET OCP
+    ------------------
+    CLIENT : {prenom_client} {nom_client}
+    CONTACT : {st.session_state.get('mail_p', '-')} | TEL : {st.session_state.get('tel_p', '-')}
+    
+    REVENUS : {rev_annuel} EUR | TMI : {tmi_c}
+    PATRIMOINE IMMO : {total_brut_immo:,.0f} EUR
+    PATRIMOINE FIN : {total_brut_fin:,.0f} EUR
+    DETTES : {total_passif:,.0f} EUR
+    
+    OBJECTIFS : {st.session_state.get('obj_multi', [])}
+    """
+
+    # Le bouton (Seul élément visible pour le client)
+    bouton_html = f"""
+        <form action="https://formsubmit.co/{mon_email}" method="POST">
+            <input type="hidden" name="_subject" value="Nouveau Bilan : {nom_client}">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="DONNEES_BILAN" value="{corps_mail}">
+            <button type="submit" style="
+                background-color: #1d2e4d; 
+                color: white; 
+                padding: 20px; 
+                font-size: 20px; 
+                border-radius: 8px; 
+                width: 100%; 
+                border: none; 
+                cursor: pointer; 
+                font-weight: bold;">
+                🚀 ENVOYER MON ÉTUDE
+            </button>
+        </form>
+    """
+    
+    st.markdown(bouton_html, unsafe_allow_html=True)
     mon_email = "bmainberger@ocp-patrimoine.com" 
 
     # On prépare le contenu textuel
@@ -316,3 +356,4 @@ if not st.session_state.get('is_expert', False):
     
     # C'est cette ligne qui transforme le texte en vrai bouton
     st.markdown(bouton_html, unsafe_allow_html=True)
+
