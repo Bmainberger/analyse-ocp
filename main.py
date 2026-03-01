@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date
 
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="OCP Patrimoine - Diagnostic", layout="wide")
@@ -24,6 +25,18 @@ st.markdown("""
 Prenez 5 minutes pour réaliser une photographie complète de vos actifs. 
 ---
 """)
+
+# --- COORDONNÉES DU PROSPECT ---
+st.subheader("👤 Vos Coordonnées")
+col_id1, col_id2 = st.columns(2)
+with col_id1:
+    nom_client = st.text_input("Nom et Prénom")
+with col_id2:
+    email_client = st.text_input("Email ou Téléphone")
+
+# =========================================================
+# NE TOUCHEZ PAS À CE QUI EST EN DESSOUS (VOTRE CODE ACTUEL)
+# =========================================================
 
 # --- COORDONNÉES DU PROSPECT ---
 st.subheader("👤 Vos Coordonnées")
