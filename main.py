@@ -272,6 +272,7 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
+# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     st.header("🏁 Terminer mon bilan")
@@ -279,65 +280,39 @@ if not st.session_state.get('is_expert', False):
 
     mon_email = "bmainberger@ocp-patrimoine.com" 
 
-    # CONSTRUCTION DE L'ÉTUDE ULTRA-DÉTAILLÉE (Sections 1 à 11)
-    etude_complete = f"""
-    --- 1 & 2. ÉTAT CIVIL & COORDONNÉES ---
-    Client : {prenom_client} {nom_client} ({nationalite})
+    # On prépare le contenu textuel
+    corps_mail = f"""
+    --- 1 & 2. ÉTAT CIVIL ---
+    Client : {prenom_client} {nom_client}
     Situation : {situation} | Enfants : {nb_enfants}
-    Adresse : {st.session_state.get('adr_p', 'Non renseignée')}
-    Tel : {st.session_state.get('tel_p', '-')} | Email : {st.session_state.get('mail_p', '-')}
+    Email : {st.session_state.get('mail_p', '-')} | Tel : {st.session_state.get('tel_p', '-')}
     
-    --- 3. PROFESSION & REVENUS ---
-    Statut : {st.session_state.get('statut_pro', '-')} | Poste : {st.session_state.get('poste_pro', '-')}
-    Revenu Annuel : {rev_annuel} € | Foncier : {rev_foncier} €
-    TMI : {tmi_c} | Reste à vivre estimé : {reste_vivre_brut:,.0f} €/mois
+    --- 3. REVENUS ---
+    Annuel : {rev_annuel} € | Foncier : {rev_foncier} €
+    TMI : {tmi_c} | Reste à vivre : {reste_vivre_brut:,.0f} €
     
-    --- 4 & 5. PATRIMOINE IMMOBILIER ---
-    Total Immo Brut : {total_brut_immo:,.0f} €
-    Nb Biens Physiques : {st.session_state.get('nb_p_p', 0)}
-    Nb Placements SCPI/Pierre-Papier : {st.session_state.get('nb_p_c', 0)}
+    --- 4, 5 & 6. PATRIMOINE ---
+    Immo : {total_brut_immo:,.0f} € | Financier : {total_brut_fin:,.0f} €
     
-    --- 6. PATRIMOINE FINANCIER ---
-    Total Financier Brut : {total_brut_fin:,.0f} €
-    Nb Contrats : {st.session_state.get('nb_f_f', 0)}
+    --- 9. PASSIF ---
+    Dettes totales : {total_passif:,.0f} €
     
-    --- 7 & 8. PRÉVOYANCE & SANTÉ ---
-    Nb Contrats Prévoyance : {st.session_state.get('nb_p_v', 0)}
-    Mutuelle : {st.session_state.get('s_org', '-')} ({st.session_state.get('s_typ', '-')})
-    Couverture : {st.session_state.get('s_niv', '-')}
-    
-    --- 9. PASSIF (DETTES) ---
-    Total Dettes (Passif) : {total_passif:,.0f} €
-    Mensualités Crédits Immo : {mensualites_totales:,.0f} €/mois
-    
-    --- 11. OBJECTIFS & PROFIL ---
-    Priorités : {", ".join(st.session_state.get('obj_multi', []))}
-    Horizon : {horizon} | Profil Risque : {profil_r}
+    --- 11. OBJECTIFS ---
+    Priorités : {st.session_state.get('obj_multi', [])}
+    Horizon : {horizon} | Risque : {profil_r}
     """
 
-    form_html = f"""
+    # Le code HTML du bouton (bien enveloppé dans des triples guillemets)
+    bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="DOSSIER PATRIMOINE COMPLET : {nom_client}">
+            <input type="hidden" name="_subject" value="BILAN COMPLET : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="Nom_Client" value="{prenom_client} {nom_client}">
-            
-            <textarea name="CONTENU_DU_BILAN" style="display:none;">{etude_complete}</textarea>
-            
-            <button type="submit" style="
-                background-color: #1d2e4d; 
-                color: white; 
-                padding: 20px; 
-                font-size: 18px; 
-                border-radius: 8px; 
-                width: 100%; 
-                border: none; 
-                cursor: pointer;
-                font-weight: bold;
-                box-shadow: 0px 4px 10px rgba(0,0,0,0.2);">
+            <input type="hidden" name="RECAPITULATIF_DU_DOSSIER" value="{corps_mail}">
+            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 18px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE COMPLÈTE (11 MODULES)
             </button>
         </form>
     """
-    st.markdown(form_html, unsafe_allow_html=True)
-
+    
+    # C'est cette ligne qui transforme le texte en vrai bouton
+    st.markdown(bouton_html, unsafe_allow_html=True)
