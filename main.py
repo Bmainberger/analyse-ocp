@@ -305,6 +305,48 @@ if not st.session_state.get('is_expert', False):
     st.subheader("🏁 Fin de la saisie")
     st.write("Merci d'avoir complété votre profil. Cliquez ci-dessous pour transmettre vos informations.")
     
-    if st.button("📤 ENVOYER MON DOSSIER"):
-        st.balloons()
-        st.success("Vos informations ont été transmises avec succès.")
+   # --- ÉTAPE FINALE : ENVOI RÉEL PAR EMAIL ---
+    st.markdown("---")
+    st.header("🏁 Terminer et transmettre mon bilan")
+
+    # On prépare le contenu résumé du mail
+    mail_content = f"""
+NOUVEAU DOSSIER PATRIMONIAL - OCP
+---------------------------------
+Identité : {prenom_client} {nom_client}
+Situation : {situation}
+
+RÉSUMÉ DES CHIFFRES CLÉS :
+- Patrimoine Immobilier : {total_brut_immo} €
+- Patrimoine Financier : {total_brut_fin} €
+- Dettes totales : {total_passif} €
+- Revenus annuels : {rev_annuel} €
+- Reste à vivre : {reste_vivre_brut} €
+---------------------------------
+"""
+
+    # --- CONFIGURATION DE VOTRE ADRESSE ---
+    mon_email = "votre-mail@ocp-patrimoine.com" # <--- METTEZ VOTRE VRAI MAIL ICI
+
+    # Formulaire d'envoi réel
+    form_html = f"""
+        <form action="https://formsubmit.co/{mon_email}" method="POST">
+            <input type="hidden" name="DOSSIER_PATRIMONIAL" value="{mail_content}">
+            <input type="hidden" name="_subject" value="Nouveau Bilan Client : {nom_client}">
+            <input type="hidden" name="_captcha" value="false">
+            <button type="submit" style="
+                background-color: #1a2b49; 
+                color: white; 
+                padding: 20px; 
+                font-size: 18px; 
+                border-radius: 10px; 
+                width: 100%; 
+                border: none; 
+                cursor: pointer;
+                font-weight: bold;">
+                ✅ ENVOYER MON DOSSIER À MON CONSEILLER
+            </button>
+        </form>
+    """
+
+    st.markdown(form_html, unsafe_allow_html=True)
