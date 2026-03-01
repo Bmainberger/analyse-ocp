@@ -326,7 +326,7 @@ RÉSUMÉ DES CHIFFRES CLÉS :
 """
 
     # --- CONFIGURATION DE VOTRE ADRESSE ---
-    mon_email = "votre-mail@ocp-patrimoine.com" # <--- METTEZ VOTRE VRAI MAIL ICI
+    mon_email = "bmainberger@ocp-patrimoine.com" # <--- METTEZ VOTRE VRAI MAIL ICI
 
     # Formulaire d'envoi réel
     form_html = f"""
