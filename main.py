@@ -276,45 +276,20 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court terme", "Moyen terme", "Long terme", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
-st.sidebar.title("📊 Synthèse Patrimoniale")
-pat_brut = total_brut_immo + total_brut_fin
-pat_net = pat_brut - total_passif
-capa_epargne = reste_vivre_brut - mensualites_totales
+# --- CALCUL PATRIMOINE NET (VISIBLE UNIQUEMENT SI CODE ADMINOCP) ---
+if st.session_state.get('is_expert', False):
+    st.sidebar.title("📊 Synthèse Expert")
+    pat_brut = total_brut_immo + total_brut_fin
+    pat_net = pat_brut - total_passif
+    capa_epargne = reste_vivre_brut - mensualites_totales
 
-st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
-st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois", delta="Flux libre")
-st.sidebar.markdown("---")
-st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
-st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
-
-# --- SECTION 10 : RÉSUMÉ FINAL ---
-st.markdown("---")
-if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-    st.success("Analyse OCP terminée !")
-    r1, r2 = st.columns(2)
-    with r1:
-        st.subheader("📋 État Civil")
-        st.write(f"**Client :** {prenom_client} {nom_client}")
-        st.write(f"**Situation :** {situation}")
-        if situation in ["Marié(e)", "Pacsé(e)"]:
-            st.write(f"**Conjoint :** {pre_conj} {nom_conj}")
-    with r2:
-        st.subheader("💰 Bilan Chiffré")
-        st.metric("NET PATRIMONIAL", f"{pat_net:,.0f} €".replace(",", " "))
-        st.metric("ÉPARGNE MENSUELLE LIBRE", f"{capa_epargne:,.0f} €")
+    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+    st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois")
+    st.sidebar.markdown("---")
+    st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
+    st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
     
     st.markdown("---")
-    r3, r4 = st.columns(2)
-    with r3:
-        st.subheader("🎯 Objectifs & Profil")
-        if obj_prioritaires:
-            st.write(f"**Priorités :** {', '.join(obj_prioritaires)}")
-        st.write(f"**Horizon :** {horizon}")
-        st.write(f"**Profil :** {profil_r}")
-    with r4:
-        st.subheader("🛡️ Protection")
-        st.write(f"**Contrat Santé :** {s_org if s_org else 'Non saisi'}")
-        st.write(f"**Épargne dispo :** {total_brut_fin:,.0f} €".replace(",", " "))
-
-st.info("Bilan complet prêt.")
+    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+        st.balloons()
+        st.success("Analyse prête pour l'exportation (Mode Expert activé).")
