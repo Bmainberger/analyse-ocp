@@ -298,10 +298,7 @@ if st.session_state.get('is_expert', False):
         st.balloons()
         st.success("Analyse prête pour l'exportation (Mode Expert).")
 # ... (fin de votre bloc Expert avec le bouton GENERER)
-    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-        st.balloons()
-        st.success("Analyse prête pour l'exportation (Mode Expert activé).")
-
+   
 # --- LE NOUVEAU BLOC POUR LE CLIENT (À METTRE ICI) ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
