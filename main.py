@@ -4,11 +4,7 @@ from datetime import date
 # 1. CONFIGURATION
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# 2. GESTION DE LA NAVIGATION
-if 'page' not in st.session_state: 
-    st.session_state['page'] = 'home'
-
-# --- LES COMPTEURS DE SÉCURITÉ (Indispensables pour éviter l'erreur rouge Immo) ---
+# 2. LES COMPTEURS DE SÉCURITÉ
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
@@ -17,33 +13,28 @@ rev_annuel = 0.0
 rev_foncier = 0.0
 reste_vivre_brut = 0.0
 
-# --- PAGE D'ACCUEIL ---
-if st.session_state['page'] == 'home':
-    st.title("Votre stratégie patrimoniale commence ici.")
-    if st.button("DÉMARRER MON ANALYSE"):
-        st.session_state['page'] = 'auth'
-        st.rerun()
-    st.stop()
+# 3. ACCÈS EXPERT (Dans la barre latérale à gauche)
+with st.sidebar:
+    st.title("🔐 Espace Expert")
+    code_admin = st.text_input("Code confidentiel", type="password")
+    if code_admin == "ADMINOCP":
+        st.session_state['is_expert'] = True
+        st.success("Mode Expert Activé")
+    else:
+        st.session_state['is_expert'] = False
 
-# --- PAGE DE CODE ---
-elif st.session_state['page'] == 'auth':
-    st.subheader("🔐 Accès réservé")
-    code = st.text_input("Saisissez votre code :", type="password")
-    
-    if st.button("Valider"):
-        if code == "OCP2026":
-            st.session_state['page'] = 'formulaire'
-            st.session_state['is_expert'] = False
-            st.rerun()
-        elif code == "ADMINOCP":
-            st.session_state['page'] = 'formulaire'
-            st.session_state['is_expert'] = True
-            st.rerun()
-        else:
-            st.error("Code incorrect.")
-    st.stop()
+# 4. LANDING PAGE
+st.title("Votre stratégie patrimoniale commence ici.")
 
-# --- VOTRE SECTION 1 COMMENCE JUSTE EN DESSOUS ---
+col_b1, col_b2, col_b3 = st.columns(3)
+with col_b1:
+    st.info("🔭 **Vision 360°**\n\nRegroupez tout votre patrimoine.")
+with col_b2:
+    st.info("📈 **Optimisation**\n\nRéduisez vos impôts.")
+with col_b3:
+    st.info("🛡️ **Sérénité**\n\nDiagnostic par un expert.")
+
+st.markdown("---")
     
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
