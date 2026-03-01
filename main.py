@@ -272,19 +272,16 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
-if not st.session_state.get('is_expert', False):
-    st.markdown("---")
-
-    # --- SECTION ENVOI FINAL ---
+# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
     mon_email = "bmainberger@ocp-patrimoine.com" 
 
-    # Construction du résumé invisible (C'est ce que vous recevrez)
+    # Construction du résumé (Invisible pour le client)
     corps_mail = f"""
-    DOSSIER COMPLET OCP
-    ------------------
+    NOUVELLE ÉTUDE OCP PATRIMOINE
+    -----------------------------
     CLIENT : {prenom_client} {nom_client}
     CONTACT : {st.session_state.get('mail_p', '-')} | TEL : {st.session_state.get('tel_p', '-')}
     
@@ -294,66 +291,28 @@ if not st.session_state.get('is_expert', False):
     DETTES : {total_passif:,.0f} EUR
     
     OBJECTIFS : {st.session_state.get('obj_multi', [])}
+    HORIZON : {horizon} | PROFIL : {profil_r}
     """
 
-    # Le bouton (Seul élément visible pour le client)
+    # Le bouton discret
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="Nouveau Bilan : {nom_client}">
+            <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DONNEES_BILAN" value="{corps_mail}">
+            <input type="hidden" name="DOSSIER_TECHNIQUE" value="{corps_mail}">
             <button type="submit" style="
                 background-color: #1d2e4d; 
                 color: white; 
-                padding: 20px; 
-                font-size: 20px; 
+                padding: 18px; 
+                font-size: 18px; 
                 border-radius: 8px; 
                 width: 100%; 
                 border: none; 
                 cursor: pointer; 
                 font-weight: bold;">
-                🚀 ENVOYER MON ÉTUDE
+                🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
     
     st.markdown(bouton_html, unsafe_allow_html=True)
-    mon_email = "bmainberger@ocp-patrimoine.com" 
-
-    # On prépare le contenu textuel
-    corps_mail = f"""
-    --- 1 & 2. ÉTAT CIVIL ---
-    Client : {prenom_client} {nom_client}
-    Situation : {situation} | Enfants : {nb_enfants}
-    Email : {st.session_state.get('mail_p', '-')} | Tel : {st.session_state.get('tel_p', '-')}
-    
-    --- 3. REVENUS ---
-    Annuel : {rev_annuel} € | Foncier : {rev_foncier} €
-    TMI : {tmi_c} | Reste à vivre : {reste_vivre_brut:,.0f} €
-    
-    --- 4, 5 & 6. PATRIMOINE ---
-    Immo : {total_brut_immo:,.0f} € | Financier : {total_brut_fin:,.0f} €
-    
-    --- 9. PASSIF ---
-    Dettes totales : {total_passif:,.0f} €
-    
-    --- 11. OBJECTIFS ---
-    Priorités : {st.session_state.get('obj_multi', [])}
-    Horizon : {horizon} | Risque : {profil_r}
-    """
-
-    # Le code HTML du bouton (bien enveloppé dans des triples guillemets)
-    bouton_html = f"""
-        <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="BILAN COMPLET : {nom_client}">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="RECAPITULATIF_DU_DOSSIER" value="{corps_mail}">
-            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 18px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
-                🚀 TRANSMETTRE MON ÉTUDE COMPLÈTE (11 MODULES)
-            </button>
-        </form>
-    """
-    
-    # C'est cette ligne qui transforme le texte en vrai bouton
-    st.markdown(bouton_html, unsafe_allow_html=True)
-
