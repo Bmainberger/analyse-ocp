@@ -1,65 +1,39 @@
 import streamlit as st
 from datetime import date
-import json
 
-# Configuration de la page
+# 1. CONFIGURATION
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# Style visuel (couleurs et bouton vert)
-st.markdown("""
-    <style>
-    .main { background-color: #ffffff; }
-    div.stButton > button {
-        background-color: #26e291; color: #1a2b49; border-radius: 8px;
-        padding: 0.7em 2.5em; font-weight: bold; border: none;
-    }
-    .hero-title { font-size: 3rem; font-weight: 800; color: #1a2b49; }
-    </style>
-    """, unsafe_allow_html=True)
+# 2. GESTION DE LA NAVIGATION (ACCUEIL ET CODES)
+if 'page' not in st.session_state: 
+    st.session_state['page'] = 'home'
 
-# Préparation des variables de calcul
-if 'page' not in st.session_state: st.session_state['page'] = 'home'
-total_brut_immo = 0.0
-total_brut_fin = 0.0
-total_passif = 0.0
-mensualites_totales = 0.0
-pre_conj = ""
-nom_conj = ""
-total_passif = 0.0
-mensualites_totales = 0.0  # Pour le calcul du budget
-pre_conj = ""
-nom_conj = ""
-
-# --- ÉTAPE 2 : ACCUEIL ET SÉCURITÉ ---
+# --- PAGE D'ACCUEIL ---
 if st.session_state['page'] == 'home':
-    st.markdown('<h1 class="hero-title">Votre stratégie patrimoniale commence ici.</h1>', unsafe_allow_html=True)
+    st.title("Votre stratégie patrimoniale commence ici.")
     if st.button("DÉMARRER MON ANALYSE"):
         st.session_state['page'] = 'auth'
         st.rerun()
     st.stop()
 
+# --- PAGE DE CODE (CLIENT / ADMIN) ---
 elif st.session_state['page'] == 'auth':
     st.subheader("🔐 Accès réservé")
-    code = st.text_input("Veuillez saisir votre code d'accès confidentiel :", type="password")
+    code = st.text_input("Saisissez votre code :", type="password")
     
-    col_a1, col_a2 = st.columns(2)
-    with col_a1:
-        if st.button("Valider"):
-            if code == "OCP2026": # Code pour vos clients
-                st.session_state['page'] = 'formulaire'
-                st.session_state['is_expert'] = False
-                st.rerun()
-            elif code == "ADMINOCP": # Votre code à vous (Béatrice)
-                st.session_state['page'] = 'formulaire'
-                st.session_state['is_expert'] = True
-                st.rerun()
-            else:
-                st.error("Code incorrect.")
-    with col_a2:
-        if st.button("← Retour"):
-            st.session_state['page'] = 'home'
+    if st.button("Valider"):
+        if code == "OCP2026": # CLIENT
+            st.session_state['page'] = 'formulaire'
+            st.session_state['is_expert'] = False
             st.rerun()
+        elif code == "ADMINOCP": # VOUS (ADMIN)
+            st.session_state['page'] = 'formulaire'
+            st.session_state['is_expert'] = True
+            st.rerun()
+        else:
+            st.error("Code incorrect.")
     st.stop()
+    
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
