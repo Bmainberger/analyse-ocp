@@ -1,4 +1,4 @@
-Aimport streamlit as st
+import streamlit as st
 from datetime import date
 
 # 1. CONFIGURATION
