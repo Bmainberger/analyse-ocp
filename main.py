@@ -18,11 +18,30 @@ with st.sidebar:
         st.session_state['is_expert'] = False
         st.caption("Visiteur : Remplissez le formulaire ci-contre.")
 
+import streamlit as st
+from datetime import date
+
+# --- CONFIGURATION DE LA PAGE ---
+st.set_page_config(page_title="OCP Patrimoine - Diagnostic", layout="wide")
+
+# --- SYSTÈME DE CONNEXION DISCRET (SIDEBAR) ---
+if 'is_expert' not in st.session_state:
+    st.session_state['is_expert'] = False
+
+with st.sidebar:
+    st.title("🔐 Accès OCP")
+    code_saisi = st.text_input("Code Expert (Optionnel)", type="password")
+    if code_saisi == "ADMINOCP":
+        st.session_state['is_expert'] = True
+        st.success("👨‍💼 MODE EXPERT ACTIVÉ")
+    else:
+        st.session_state['is_expert'] = False
+        st.caption("Visiteur : Remplissez le formulaire ci-contre.")
+
 # --- PAGE D'ACCUEIL / PRÉSENTATION ---
 st.title("🏢 OCP Patrimoine : Votre Diagnostic en ligne")
 st.markdown("""
 ### Bienvenue sur votre espace de diagnostic patrimonial.
-Prenez 5 minutes pour réaliser une photographie complète de vos actifs. 
 ---
 """)
 
@@ -30,9 +49,10 @@ Prenez 5 minutes pour réaliser une photographie complète de vos actifs.
 st.subheader("👤 Vos Coordonnées")
 col_id1, col_id2 = st.columns(2)
 with col_id1:
-    nom_client = st.text_input("Nom et Prénom")
+    # J'ai mis une "key" pour éviter l'erreur de doublon de l'image 4
+    nom_client = st.text_input("Nom et Prénom", key="nom_prospect")
 with col_id2:
-    email_client = st.text_input("Email ou Téléphone")
+    email_client = st.text_input("Email ou Téléphone", key="email_prospect")
 
 # =========================================================
 # NE TOUCHEZ PAS À CE QUI EST EN DESSOUS (VOTRE CODE ACTUEL)
