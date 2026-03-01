@@ -1,6 +1,4 @@
-import streamlit as st
-from datetime import date
-import json
+# --- DEBUT DU BLOC A REMPLACER ---
 
 # Configuration de la page
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
@@ -14,30 +12,44 @@ st.markdown("""
         padding: 0.7em 2.5em; font-weight: bold; border: none;
     }
     .hero-title { font-size: 3rem; font-weight: 800; color: #1a2b49; }
+    .benefit-card { background-color: #f8fafc; padding: 20px; border-radius: 10px; border-left: 5px solid #26e291; height: 100%; }
     </style>
     """, unsafe_allow_html=True)
 
-# Préparation des variables de calcul
-if 'page' not in st.session_state: st.session_state['page'] = 'home'
+# Initialisation des variables de navigation et de calcul
+if 'page' not in st.session_state: 
+    st.session_state['page'] = 'home'
+
+# Initialisation OBLIGATOIRE des variables pour vos modules 1 à 11
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
 mensualites_totales = 0.0
 pre_conj = ""
 nom_conj = ""
-total_passif = 0.0
-mensualites_totales = 0.0  # Pour le calcul du budget
-pre_conj = ""
-nom_conj = ""
 
-# --- ÉTAPE 2 : ACCUEIL ET SÉCURITÉ ---
+# --- ÉTAPE 1 : ACCUEIL PRO ---
 if st.session_state['page'] == 'home':
-    st.markdown('<h1 class="hero-title">Votre stratégie patrimoniale commence ici.</h1>', unsafe_allow_html=True)
-    if st.button("DÉMARRER MON ANALYSE"):
+    st.markdown('<h1 class="hero-title">Prenez de la hauteur sur votre patrimoine.</h1>', unsafe_allow_html=True)
+    
+    col_b1, col_b2, col_b3 = st.columns(3)
+    with col_b1:
+        st.markdown('<div class="benefit-card"><h3>🔭 Vision 360°</h3><p>Regroupez immo, placements et dettes sur une seule interface.</p></div>', unsafe_allow_html=True)
+    with col_b2:
+        st.markdown('<div class="benefit-card"><h3>📈 Optimisation</h3><p>Réduisez vos impôts et préparez votre transmission.</p></div>', unsafe_allow_html=True)
+    with col_b3:
+        st.markdown('<div class="benefit-card"><h3>🛡️ Sérénité</h3><p>Un diagnostic clair réalisé par un expert OCP.</p></div>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.subheader("📝 Le Processus")
+    st.write("**1. Remplissez vos données (5 min) / 2. Analyse par votre conseiller / 3. Entretien de restitution.**")
+    
+    if st.button("🚀 DÉMARRER MON BILAN GRATUIT"):
         st.session_state['page'] = 'auth'
         st.rerun()
     st.stop()
 
+# --- ÉTAPE 2 : SÉCURITÉ (Saisie des codes) ---
 elif st.session_state['page'] == 'auth':
     st.subheader("🔐 Accès réservé")
     code = st.text_input("Veuillez saisir votre code d'accès confidentiel :", type="password")
@@ -45,11 +57,11 @@ elif st.session_state['page'] == 'auth':
     col_a1, col_a2 = st.columns(2)
     with col_a1:
         if st.button("Valider"):
-            if code == "OCP2026": # Code pour vos clients
+            if code == "OCP2026": 
                 st.session_state['page'] = 'formulaire'
                 st.session_state['is_expert'] = False
                 st.rerun()
-            elif code == "ADMINOCP": # Votre code à vous (Béatrice)
+            elif code == "ADMINOCP": 
                 st.session_state['page'] = 'formulaire'
                 st.session_state['is_expert'] = True
                 st.rerun()
@@ -60,6 +72,8 @@ elif st.session_state['page'] == 'auth':
             st.session_state['page'] = 'home'
             st.rerun()
     st.stop()
+
+# --- FIN DU BLOC A REMPLACER ---
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
