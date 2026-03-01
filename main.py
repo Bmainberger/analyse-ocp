@@ -276,34 +276,20 @@ if st.session_state.get('is_expert', False):
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
+    # Préparation technique invisible
     mon_email = "bmainberger@ocp-patrimoine.com" 
+    recap_technique = f"CLIENT: {nom_client} {prenom_client} | TEL: {st.session_state.get('tel_p', '-')} | IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif} | OBJ: {st.session_state.get('obj_multi', [])}"
 
-    # Construction du résumé (Invisible pour le client)
-    corps_mail = f"""
-    NOUVELLE ÉTUDE OCP PATRIMOINE
-    -----------------------------
-    CLIENT : {prenom_client} {nom_client}
-    CONTACT : {st.session_state.get('mail_p', '-')} | TEL : {st.session_state.get('tel_p', '-')}
-    
-    REVENUS : {rev_annuel} EUR | TMI : {tmi_c}
-    PATRIMOINE IMMO : {total_brut_immo:,.0f} EUR
-    PATRIMOINE FIN : {total_brut_fin:,.0f} EUR
-    DETTES : {total_passif:,.0f} EUR
-    
-    OBJECTIFS : {st.session_state.get('obj_multi', [])}
-    HORIZON : {horizon} | PROFIL : {profil_r}
-    """
-
-    # Le bouton discret
+    # Construction du bouton (L'unique élément visible)
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER_TECHNIQUE" value="{corps_mail}">
+            <input type="hidden" name="DOSSIER" value="{recap_technique}">
             <button type="submit" style="
                 background-color: #1d2e4d; 
                 color: white; 
-                padding: 18px; 
+                padding: 20px; 
                 font-size: 18px; 
                 border-radius: 8px; 
                 width: 100%; 
