@@ -31,25 +31,6 @@ with col_id1:
 with col_id2:
     email_client = st.text_input("Email ou Téléphone", key="email_client_final")
 
-# =========================================================
-# ARRÊTEZ-VOUS ICI. EFFACEZ TOUT CE QUI EST ENTRE ICI 
-# ET VOS VARIABLES DE CALCULS (Section 1 : État Civil)
-# =========================================================
-# =========================================================
-# CI-DESSOUS : VOTRE CODE EXISTANT (NE PAS TOUCHER)
-# =========================================================
-
-# =========================================================
-# NE TOUCHEZ PAS À CE QUI EST EN DESSOUS (VOTRE CODE ACTUEL)
-# =========================================================
-
-# --- COORDONNÉES DU PROSPECT ---
-st.subheader("👤 Vos Coordonnées")
-col_id1, col_id2 = st.columns(2)
-with col_id1:
-    nom_client = st.text_input("Nom et Prénom")
-with col_id2:
-    email_client = st.text_input("Email ou Téléphone")
 
 # --- LA SUITE DE VOTRE CODE (NE PAS TOUCHER EN DESSOUS) ---
 
