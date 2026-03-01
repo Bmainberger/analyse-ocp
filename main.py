@@ -2,115 +2,134 @@ import streamlit as st
 from datetime import date
 import json
 
-# 1. Configuration de la page
-st.set_page_config(page_title="OCP Patrimoine - Audit & Stratégie", page_icon="🛡️", layout="wide")
+# 1. Configuration Style "SaaS"
+st.set_page_config(page_title="OCP Patrimoine - Audit Digital", page_icon="📈", layout="wide")
 
-# --- SYSTÈME DE MOT DE PASSE ---
-def check_password():
-    if "password_correct" not in st.session_state:
-        st.title("🔐 Accès Questionnaire OCP")
+# --- CSS PERSONNALISÉ (STYLE HARVEST) ---
+st.markdown("""
+    <style>
+    .main { background-color: #ffffff; }
+    div.stButton > button {
+        background-color: #0047AB;
+        color: white;
+        border-radius: 8px;
+        padding: 0.6em 2em;
+        font-weight: bold;
+        border: none;
+        transition: 0.3s;
+    }
+    div.stButton > button:hover {
+        background-color: #002d6d;
+        color: white;
+    }
+    .hero-title { font-size: 3.5rem; font-weight: 800; color: #1a2b49; line-height: 1.1; }
+    .hero-sub { font-size: 1.4rem; color: #556172; margin-top: 20px; margin-bottom: 30px; }
+    .feature-box { padding: 20px; border-radius: 10px; background-color: #f1f5f9; border-left: 5px solid #0047AB; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- GESTION DE LA NAVIGATION ---
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'home'
+if 'is_expert' not in st.session_state:
+    st.session_state['is_expert'] = False
+if 'data' not in st.session_state:
+    st.session_state['data'] = {}
+
+def g(key, default=""):
+    return st.session_state['data'].get(key, default)
+
+# --- 1. PAGE D'ACCUEIL (LANDING PAGE) ---
+if st.session_state['page'] == 'home':
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col1, col2 = st.columns([1.2, 1])
+    
+    with col1:
+        st.markdown('<h1 class="hero-title">Votre stratégie <br><span style="color:#0047AB;">patrimoniale</span> commence ici.</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-sub">Préparez votre audit privé avec OCP Patrimoine. Une approche digitale, sécurisée et exhaustive pour structurer votre avenir.</p>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-box">
+        <strong>🚀 Bilan Express 360°</strong><br>
+        Anticipez vos besoins en fiscalité, retraite et transmission via notre interface sécurisée.
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("DÉMARRER MON ANALYSE"):
+            st.session_state['page'] = 'auth'
+            st.rerun()
+            
+    with col2:
+        st.image("https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800", caption="Intelligence Patrimoniale OCP")
+
+# --- 2. PAGE D'AUTHENTIFICATION ---
+elif st.session_state['page'] == 'auth':
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    c_auth, _ = st.columns([1, 1])
+    with c_auth:
+        st.subheader("🔐 Accès réservé")
         pwd = st.text_input("Veuillez saisir votre code d'accès confidentiel :", type="password")
-        if st.button("Accéder au formulaire"):
-            if pwd == "OCP2026": # Votre mot de passe client
-                st.session_state["password_correct"] = True
+        
+        if st.button("Valider l'accès"):
+            if pwd == "OCP2026":
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = False
+                st.rerun()
+            elif pwd == "ADMINOCP": # VOTRE CODE SECRET À VOUS
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = True
                 st.rerun()
             else:
-                st.error("Code incorrect")
-        return False
-    return True
+                st.error("Code d'accès non reconnu.")
+        
+        if st.button("← Retour"):
+            st.session_state['page'] = 'home'
+            st.rerun()
 
-if check_password():
-    # --- LOGIQUE DE MÉMOIRE ---
-    if 'data' not in st.session_state:
-        st.session_state['data'] = {}
-
-    # --- BARRE LATÉRALE (ADMINISTRATION & EXPERT) ---
-    st.sidebar.title("🛠️ Espace Administration")
+# --- 3. LE FORMULAIRE ---
+elif st.session_state['page'] == 'formulaire':
     
-    # Case à cocher pour vous (L'Expert)
-    mode_expert = st.sidebar.checkbox("🔓 Activer le Mode Expert (Calculs & Notes)", value=False)
+    # ADMINISTRATION TOTALEMENT INVISIBLE POUR LE CLIENT
+    if st.session_state['is_expert']:
+        st.sidebar.title("🛠️ Console Expert OCP")
+        uploaded_file = st.sidebar.file_uploader("📂 Charger un dossier client", type=["json"])
+        if uploaded_file:
+            st.session_state['data'] = json.load(uploaded_file)
+            st.sidebar.success("Données chargées")
+        
+        # Bouton de déconnexion expert
+        if st.sidebar.button("Quitter le mode Expert"):
+            st.session_state['is_expert'] = False
+            st.rerun()
+
+    st.title("🛡️ Questionnaire de Préparation - OCP")
     
-    # Chargement du fichier client
-    uploaded_file = st.sidebar.file_uploader("Charger un dossier client (.json)", type=["json"])
-    if uploaded_file is not None:
-        st.session_state['data'] = json.load(uploaded_file)
-        st.sidebar.success("✅ Dossier client chargé")
+    # --- SECTIONS 1 À 11 ---
+    st.header("1. État Civil")
+    nom_c = st.text_input("Nom", value=g('nom_c'), key="nom_c")
+    pre_c = st.text_input("Prénom", value=g('pre_c'), key="pre_c")
+    # (Remettre ici tout le reste de vos sections 2 à 11)
 
-    def g(key, default=""):
-        return st.session_state['data'].get(key, default)
-
-    # --- EN-TÊTE CLIENT ---
-    st.title("🛡️ OCP Patrimoine - Collecte d'informations")
-    
-    if not mode_expert:
-        with st.expander("ℹ️ Instructions pour votre bilan", expanded=True):
-            st.markdown("""
-            **Bienvenue.** Ce formulaire permet de recueillir les informations pour votre bilan patrimonial. 
-            **Confidentialité :** Vos données sont traitées uniquement sur votre navigateur. Aucune donnée n'est stockée sur nos serveurs.
-            **Procédure :** Remplissez les sections ci-dessous, puis cliquez sur **'📥 Terminer et Sauvegarder'** tout en bas.
-            """)
-
-    st.markdown("---")
-
-    # --- INITIALISATION CALCULS (EN ARRIÈRE-PLAN) ---
-    total_brut_immo = 0.0
-    total_brut_fin = 0.0
-    total_passif = 0.0
-    mensualites_totales = 0.0
-
-    # --- SECTION 1 : ÉTAT CIVIL --- (CODE INCHANGÉ)
-    st.header("1. État Civil & Famille")
-    col1, col2 = st.columns(2)
-    with col1:
-        nom_c = st.text_input("Nom", value=g('nom_c'), key="nom_c")
-        pre_c = st.text_input("Prénom", value=g('pre_c'), key="pre_c")
-        d_n = g('dnaiss_c', "1980-01-01")
-        dnaiss_c = st.date_input("Date de naissance", value=date.fromisoformat(d_n) if isinstance(d_n, str) else d_n, key="dnaiss_c")
-        lieu_c = st.text_input("Lieu de naissance", value=g('lieu_c'), key="lieu_c")
-        nat_c = st.text_input("Nationalité", value=g('nat_c'), key="nat_c") 
-    with col2:
-        sit_opts = ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"]
-        sit_val = g('sit_mat', "Célibataire")
-        sit_mat = st.selectbox("Situation Matrimoniale", sit_opts, index=sit_opts.index(sit_val), key="sit_mat")
-        nb_e = st.number_input("Nombre d'enfants à charge", min_value=0, value=int(g('nb_e', 0)), key="nb_e")
-
-    # (Ici vos sections 2 à 11 restent à l'identique dans votre code complet)
-    # J'inclus les calculs automatiques pour qu'ils fonctionnent en Mode Expert
-    
-    # --- CALCULS FINAUX ---
-    pat_net = total_brut_immo + total_brut_fin - total_passif
-
-    # --- SECTION 12 : ANALYSE EXPERT (VISIBLE UNIQUEMENT SI MODE_EXPERT COCHÉ) ---
-    if mode_expert:
+    # --- SECTION 12 EXPERT (VISIBLE UNIQUEMENT SI VOUS AVEZ TAPÉ ADMINOCP) ---
+    if st.session_state['is_expert']:
         st.markdown("---")
-        st.header("🖋️ 12. Analyse Expert & Préconisations (Confidentiel)")
-        
-        # Affichage des métriques pour votre travail
-        res1, res2 = st.columns(2)
-        res1.metric("PATRIMOINE NET CALCULÉ", f"{pat_net:,.0f} €")
-        
-        st.subheader("📝 Vos conclusions de Peer")
-        
-        # Champs de texte ajoutés sans modifier l'existant
-        audit_successoral = st.text_area("🔍 Audit Successoral (Civil)", value=g('audit_suc'), key="audit_suc", height=150)
-        analyse_fiscale = st.text_area("📉 Analyse Fiscale (IR / IFI)", value=g('audit_fisc'), key="audit_fisc", height=150)
-        notes_rdv = st.text_area("📅 Notes de rendez-vous", value=g('notes_rdv'), key="notes_rdv", height=100)
-        strategie_expert = st.text_area("🚀 Stratégie & Préconisations", value=g('strat_expert'), key="strat_expert", height=200)
-        
-        st.success("Ces analyses internes seront enregistrées dans le fichier de sauvegarde.")
+        st.header("🖋️ Analyse & Préconisations (Confidentiel)")
+        st.text_area("Audit Successoral", value=g('audit_suc'), key="audit_suc", height=150)
+        st.text_area("Analyse Fiscale", value=g('audit_fisc'), key="audit_fisc", height=150)
+        st.text_area("Préconisations Stratégiques", value=g('strat'), key="strat", height=200)
 
-    # --- BOUTON DE SAUVEGARDE FINAL (VISIBLE PAR TOUS) ---
+    # --- PIED DE PAGE & SAUVEGARDE ---
     st.markdown("---")
     st.subheader("🏁 Fin de la saisie")
+    st.write("Pour transmettre vos informations en toute sécurité, téléchargez le fichier ci-dessous.")
     
-    # On capture tout le session_state pour que vos notes soient enregistrées
-    all_fields = {k: v for k, v in st.session_state.items() if k not in ["password_correct", "data", "password"]}
+    # Exportation sans les données de session techniques
+    final_fields = {k: v for k, v in st.session_state.items() if k not in ['page', 'data', 'is_expert']}
     
     st.download_button(
-        label="📥 Terminer et Sauvegarder mon dossier OCP",
-        data=json.dumps(all_fields, default=str, indent=4),
+        label="📥 Terminer et Sauvegarder mon dossier",
+        data=json.dumps(final_fields, default=str, indent=4),
         file_name=f"Dossier_OCP_{nom_c}.json",
         mime="application/json"
     )
-
-st.caption("OCP Patrimoine - Outil d'Audit Professionnel 2026")
