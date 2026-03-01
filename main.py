@@ -4,9 +4,18 @@ from datetime import date
 # 1. CONFIGURATION
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# 2. GESTION DE LA NAVIGATION (ACCUEIL ET CODES)
+# 2. GESTION DE LA NAVIGATION
 if 'page' not in st.session_state: 
     st.session_state['page'] = 'home'
+
+# --- LES COMPTEURS DE SÉCURITÉ (Indispensables pour éviter l'erreur rouge Immo) ---
+total_brut_immo = 0.0
+total_brut_fin = 0.0
+total_passif = 0.0
+mensualites_totales = 0.0
+rev_annuel = 0.0
+rev_foncier = 0.0
+reste_vivre_brut = 0.0
 
 # --- PAGE D'ACCUEIL ---
 if st.session_state['page'] == 'home':
@@ -16,23 +25,25 @@ if st.session_state['page'] == 'home':
         st.rerun()
     st.stop()
 
-# --- PAGE DE CODE (CLIENT / ADMIN) ---
+# --- PAGE DE CODE ---
 elif st.session_state['page'] == 'auth':
     st.subheader("🔐 Accès réservé")
     code = st.text_input("Saisissez votre code :", type="password")
     
     if st.button("Valider"):
-        if code == "OCP2026": # CLIENT
+        if code == "OCP2026":
             st.session_state['page'] = 'formulaire'
             st.session_state['is_expert'] = False
             st.rerun()
-        elif code == "ADMINOCP": # VOUS (ADMIN)
+        elif code == "ADMINOCP":
             st.session_state['page'] = 'formulaire'
             st.session_state['is_expert'] = True
             st.rerun()
         else:
             st.error("Code incorrect.")
     st.stop()
+
+# --- VOTRE SECTION 1 COMMENCE JUSTE EN DESSOUS ---
     
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
