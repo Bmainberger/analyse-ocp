@@ -1,17 +1,17 @@
 import streamlit as st
 from datetime import date
 
-# --- CONFIGURATION DE LA PAGE ---
+# 1. CONFIGURATION (Ligne 1 obligatoire)
 st.set_page_config(page_title="OCP Patrimoine - Diagnostic", layout="wide")
 
-# --- SYSTÈME DE CONNEXION DISCRET (SIDEBAR) ---
+# 2. LOGIQUE D'ACCÈS DISCRET (BARRE DE GAUCHE)
 if 'is_expert' not in st.session_state:
     st.session_state['is_expert'] = False
 
 with st.sidebar:
     st.title("🔐 Accès OCP")
-    # Utilisation d'une "key" unique pour éviter l'erreur de votre photo 4
-    code_saisi = st.text_input("Code Expert (Optionnel)", type="password", key="auth_expert_key")
+    # Une seule clé unique pour le mot de passe
+    code_saisi = st.text_input("Code Expert", type="password", key="auth_expert_unique")
     if code_saisi == "ADMINOCP":
         st.session_state['is_expert'] = True
         st.success("👨‍💼 MODE EXPERT ACTIVÉ")
@@ -19,19 +19,22 @@ with st.sidebar:
         st.session_state['is_expert'] = False
         st.caption("Visiteur : Remplissez le formulaire ci-contre.")
 
-# --- PAGE D'ACCUEIL / PRÉSENTATION ---
+# 3. PAGE PRINCIPALE (VISIBLE PAR TOUS)
 st.title("🏢 OCP Patrimoine : Votre Diagnostic en ligne")
 st.markdown("---")
 
-# --- COORDONNÉES DU PROSPECT ---
+# 4. COORDONNÉES DU PROSPECT (DANS LE FORMULAIRE)
 st.subheader("👤 Vos Coordonnées")
 col_id1, col_id2 = st.columns(2)
 with col_id1:
-    # Key unique pour éviter le doublon de votre photo 3
-    nom_client_prospect = st.text_input("Nom et Prénom", key="nom_p_key")
+    nom_client = st.text_input("Nom et Prénom", key="nom_client_final")
 with col_id2:
-    email_client_prospect = st.text_input("Email ou Téléphone", key="email_p_key")
+    email_client = st.text_input("Email ou Téléphone", key="email_client_final")
 
+# =========================================================
+# ARRÊTEZ-VOUS ICI. EFFACEZ TOUT CE QUI EST ENTRE ICI 
+# ET VOS VARIABLES DE CALCULS (Section 1 : État Civil)
+# =========================================================
 # =========================================================
 # CI-DESSOUS : VOTRE CODE EXISTANT (NE PAS TOUCHER)
 # =========================================================
