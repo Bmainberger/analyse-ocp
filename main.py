@@ -297,3 +297,17 @@ if st.session_state.get('is_expert', False):
     if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
         st.balloons()
         st.success("Analyse prête pour l'exportation (Mode Expert).")
+# ... (fin de votre bloc Expert avec le bouton GENERER)
+    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+        st.balloons()
+        st.success("Analyse prête pour l'exportation (Mode Expert activé).")
+
+# --- LE NOUVEAU BLOC POUR LE CLIENT (À METTRE ICI) ---
+if not st.session_state.get('is_expert', False):
+    st.markdown("---")
+    st.subheader("🏁 Fin de la saisie")
+    st.write("Merci d'avoir complété votre profil. Cliquez sur le bouton ci-dessous pour transmettre vos informations à votre conseiller.")
+    
+    if st.button("📤 ENVOYER MON DOSSIER"):
+        st.balloons()
+        st.success("Vos informations ont été transmises avec succès. Votre conseiller OCP Patrimoine reprendra contact avec vous prochainement.")
