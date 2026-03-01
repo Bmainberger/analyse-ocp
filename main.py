@@ -11,6 +11,7 @@ st.markdown("---")
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
+mensualites_totales = 0.0  # Pour le calcul du budget
 pre_conj = ""
 nom_conj = ""
 
@@ -71,10 +72,23 @@ with cp1:
     st.text_input("Profession / Intitulé du poste", key="poste_pro")
 with cp2:
     rev_annuel = st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
-    st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
+    rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
     tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
     st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
+
+# --- SECTION 3 BIS : BUDGET MENSUEL (AJOUT) ---
+st.subheader("📊 3. bis Budget & Capacité d'Épargne")
+b_col1, b_col2 = st.columns(2)
+with b_col1:
+    vie_courante = st.number_input("Train de vie mensuel (€) (Alim, Transport, Loisirs...)", min_value=0.0, key="budget_vie")
+    loyer_mens = st.number_input("Loyer ou Charges de copropriété (€)", min_value=0.0, key="budget_loyer")
+with b_col2:
+    impots_mens = st.number_input("Impôts mensuels (€) (Prélèvement à la source...)", min_value=0.0, key="budget_impot")
+    # Calcul des revenus mensuels pour le budget
+    rev_mensuel_estim = (rev_annuel + rev_foncier) / 12
+    reste_vivre_brut = rev_mensuel_estim - (vie_courante + loyer_mens + impots_mens)
+    st.info(f"Revenus mensuels estimés : {rev_mensuel_estim:,.0f} €")
 
 st.markdown("---")
 
@@ -187,7 +201,8 @@ with tab_p1:
                 total_passif += crdu
                 st.number_input(f"Taux (%) {i}", min_value=0.0, key=f"taux_p_{i}")
             with cp3:
-                st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
+                m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
+                mensualites_totales += m_mens
                 st.date_input(f"Date fin {i}", key=f"fin_p_{i}")
 
 with tab_p2:
@@ -219,10 +234,14 @@ with col_obj2:
 # --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
 st.sidebar.title("📊 Synthèse Patrimoniale")
 pat_brut = total_brut_immo + total_brut_fin
-st.sidebar.metric("Patrimoine Brut", f"{pat_brut:,.0f} €".replace(",", " "))
-st.sidebar.metric("Total Dettes", f"{total_passif:,.0f} €".replace(",", " "), delta_color="inverse")
+pat_net = pat_brut - total_passif
+capa_epargne = reste_vivre_brut - mensualites_totales
+
+st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois", delta="Flux libre")
 st.sidebar.markdown("---")
-st.sidebar.metric("PATRIMOINE NET", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
+st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
+st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
 
 # --- SECTION 10 : RÉSUMÉ FINAL ---
 st.markdown("---")
@@ -237,7 +256,8 @@ if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
             st.write(f"**Conjoint :** {pre_conj} {nom_conj}")
     with r2:
         st.subheader("💰 Bilan Chiffré")
-        st.metric("NET PATRIMONIAL", f"{pat_brut - total_passif:,.0f} €".replace(",", " "))
+        st.metric("NET PATRIMONIAL", f"{pat_net:,.0f} €".replace(",", " "))
+        st.metric("ÉPARGNE MENSUELLE LIBRE", f"{capa_epargne:,.0f} €")
     
     st.markdown("---")
     r3, r4 = st.columns(2)
