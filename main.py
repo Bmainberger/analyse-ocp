@@ -299,3 +299,4 @@ if not st.session_state.get('is_expert', False):
     """
     
     st.markdown(bouton_html, unsafe_allow_html=True)
+
