@@ -30,26 +30,35 @@ mensualites_totales = 0.0  # Pour le calcul du budget
 pre_conj = ""
 nom_conj = ""
 
-# --- AFFICHAGE DE LA PAGE D'ACCUEIL ---
+# --- ÉTAPE 2 : ACCUEIL ET SÉCURITÉ ---
 if st.session_state['page'] == 'home':
-    # 1. On affiche le logo
-    col_l1, col_l2, col_l3 = st.columns([1, 1, 1])
-    with col_l2:
-        try:
-            st.image("LOGO OCP.jpg", use_container_width=True)
-        except:
-            st.subheader("OCP Patrimoine")
-
-    # 2. Le texte de bienvenue
     st.markdown('<h1 class="hero-title">Votre stratégie patrimoniale commence ici.</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="font-size:1.2rem; color:#556172;">Réalisez votre pré-audit confidentiel en quelques clics.</p>', unsafe_allow_html=True)
-    
-    # 3. Le bouton pour entrer
     if st.button("DÉMARRER MON ANALYSE"):
-        st.session_state['page'] = 'formulaire'
+        st.session_state['page'] = 'auth'
         st.rerun()
+    st.stop()
 
-    # On arrête l'affichage ici pour ne pas voir le questionnaire tout de suite
+elif st.session_state['page'] == 'auth':
+    st.subheader("🔐 Accès réservé")
+    code = st.text_input("Veuillez saisir votre code d'accès confidentiel :", type="password")
+    
+    col_a1, col_a2 = st.columns(2)
+    with col_a1:
+        if st.button("Valider"):
+            if code == "OCP2026": # Code pour vos clients
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = False
+                st.rerun()
+            elif code == "ADMINOCP": # Votre code à vous (Béatrice)
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = True
+                st.rerun()
+            else:
+                st.error("Code incorrect.")
+    with col_a2:
+        if st.button("← Retour"):
+            st.session_state['page'] = 'home'
+            st.rerun()
     st.stop()
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
