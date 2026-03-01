@@ -30,6 +30,27 @@ mensualites_totales = 0.0  # Pour le calcul du budget
 pre_conj = ""
 nom_conj = ""
 
+# --- AFFICHAGE DE LA PAGE D'ACCUEIL ---
+if st.session_state['page'] == 'home':
+    # 1. On affiche le logo
+    col_l1, col_l2, col_l3 = st.columns([1, 1, 1])
+    with col_l2:
+        try:
+            st.image("LOGO OCP.jpg", use_container_width=True)
+        except:
+            st.subheader("OCP Patrimoine")
+
+    # 2. Le texte de bienvenue
+    st.markdown('<h1 class="hero-title">Votre stratégie patrimoniale commence ici.</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size:1.2rem; color:#556172;">Réalisez votre pré-audit confidentiel en quelques clics.</p>', unsafe_allow_html=True)
+    
+    # 3. Le bouton pour entrer
+    if st.button("DÉMARRER MON ANALYSE"):
+        st.session_state['page'] = 'formulaire'
+        st.rerun()
+
+    # On arrête l'affichage ici pour ne pas voir le questionnaire tout de suite
+    st.stop()
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
