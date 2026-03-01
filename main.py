@@ -10,27 +10,8 @@ if 'is_expert' not in st.session_state:
 
 with st.sidebar:
     st.title("🔐 Accès OCP")
-    code_saisi = st.text_input("Code Expert (Optionnel)", type="password")
-    if code_saisi == "ADMINOCP":
-        st.session_state['is_expert'] = True
-        st.success("👨‍💼 MODE EXPERT ACTIVÉ")
-    else:
-        st.session_state['is_expert'] = False
-        st.caption("Visiteur : Remplissez le formulaire ci-contre.")
-
-import streamlit as st
-from datetime import date
-
-# --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(page_title="OCP Patrimoine - Diagnostic", layout="wide")
-
-# --- SYSTÈME DE CONNEXION DISCRET (SIDEBAR) ---
-if 'is_expert' not in st.session_state:
-    st.session_state['is_expert'] = False
-
-with st.sidebar:
-    st.title("🔐 Accès OCP")
-    code_saisi = st.text_input("Code Expert (Optionnel)", type="password")
+    # Utilisation d'une "key" unique pour éviter l'erreur de votre photo 4
+    code_saisi = st.text_input("Code Expert (Optionnel)", type="password", key="auth_expert_key")
     if code_saisi == "ADMINOCP":
         st.session_state['is_expert'] = True
         st.success("👨‍💼 MODE EXPERT ACTIVÉ")
@@ -40,19 +21,20 @@ with st.sidebar:
 
 # --- PAGE D'ACCUEIL / PRÉSENTATION ---
 st.title("🏢 OCP Patrimoine : Votre Diagnostic en ligne")
-st.markdown("""
-### Bienvenue sur votre espace de diagnostic patrimonial.
----
-""")
+st.markdown("---")
 
 # --- COORDONNÉES DU PROSPECT ---
 st.subheader("👤 Vos Coordonnées")
 col_id1, col_id2 = st.columns(2)
 with col_id1:
-    # J'ai mis une "key" pour éviter l'erreur de doublon de l'image 4
-    nom_client = st.text_input("Nom et Prénom", key="nom_prospect")
+    # Key unique pour éviter le doublon de votre photo 3
+    nom_client_prospect = st.text_input("Nom et Prénom", key="nom_p_key")
 with col_id2:
-    email_client = st.text_input("Email ou Téléphone", key="email_prospect")
+    email_client_prospect = st.text_input("Email ou Téléphone", key="email_p_key")
+
+# =========================================================
+# CI-DESSOUS : VOTRE CODE EXISTANT (NE PAS TOUCHER)
+# =========================================================
 
 # =========================================================
 # NE TOUCHEZ PAS À CE QUI EST EN DESSOUS (VOTRE CODE ACTUEL)
