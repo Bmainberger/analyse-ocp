@@ -294,12 +294,48 @@ if st.session_state.get('is_expert', False):
     
     # Bouton d'action final au centre
     st.markdown("---")
+    # --- BOUTON DE GÉNÉRATION DU RAPPORT (EXPERT UNIQUEMENT) ---
     if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
         st.balloons()
-        st.success("Analyse prête pour l'exportation (Mode Expert).")
-# ... (fin de votre bloc Expert avec le bouton GENERER)
-   
-# --- LE NOUVEAU BLOC POUR LE CLIENT (À METTRE ICI) ---
+        st.divider()
+        st.header("📋 Diagnostic Patrimonial OCP")
+        
+        # 1. ANALYSE DES CHIFFRES CLÉS
+        col_an1, col_an2, col_an3 = st.columns(3)
+        with col_an1:
+            ratio_immo = (total_brut_immo / pat_brut * 100) if pat_brut > 0 else 0
+            st.metric("Poids Immobilier", f"{ratio_immo:.1f}%")
+        with col_an2:
+            st.metric("Profil Client", profil_r)
+        with col_an3:
+            st.metric("Horizon", horizon)
+
+        # 2. PRÉCONISATIONS AUTOMATIQUES
+        st.subheader("💡 Préconisations de l'Expert")
+        if ratio_immo > 70:
+            st.warning("⚠️ **Déséquilibre Immobilier :** Le patrimoine est très exposé à l'immobilier. Envisager une diversification financière.")
+        elif ratio_immo < 30:
+            st.info("ℹ️ **Sous-exposition Immobilière :** Le patrimoine est majoritairement financier.")
+        else:
+            st.success("✅ **Cohérence :** L'allocation semble équilibrée entre immobilier et financier.")
+
+        # 3. TRANSMISSION & SUCCESSION
+        st.subheader("🧬 Transmission & Succession")
+        base_taxable = max(0, pat_net - 100000)
+        droits_estimes = base_taxable * 0.20 # Simulation simplifiée à 20%
+        st.write(f"Estimation des droits de mutation (hors AV) : **{droits_estimes:,.0f} €**".replace(",", " "))
+        st.caption("Calcul basé sur un abattement de 100 000 € (parent/enfant) et une tranche à 20%.")
+
+        # 4. ZONE DE NOTES LIBRES
+        st.text_area("✍️ Notes de l'expert :", placeholder="Commentaires personnalisés pour le client...")
+
+# --- LE NOUVEAU BLOC POUR LE CLIENT (NE PAS TOUCHER) ---
+if not st.session_state.get('is_expert', False):
+    st.markdown("---")
+    st.subheader("🏁 Fin de la saisie")
+    if st.button("📤 ENVOYER MON DOSSIER"):
+        st.balloons()
+        st.success("Vos informations ont été transmises avec succès.")--
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     st.subheader("🏁 Fin de la saisie")
