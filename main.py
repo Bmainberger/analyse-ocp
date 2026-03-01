@@ -272,20 +272,34 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
-# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
-    # Préparation technique invisible
     mon_email = "bmainberger@ocp-patrimoine.com" 
-    recap_technique = f"CLIENT: {nom_client} {prenom_client} | TEL: {st.session_state.get('tel_p', '-')} | IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif} | OBJ: {st.session_state.get('obj_multi', [])}"
+    
+    # Préparation du dossier technique (Sections 1 à 11)
+    # C'est ce bloc que vous recevrez par email
+    recap_technique = (
+        f"CLIENT: {nom_client} {prenom_client}\n"
+        f"SITUATION: {situation} | ENFANTS: {nb_enfants}\n"
+        f"CONTACT: {st.session_state.get('mail_p', '-')} | TEL: {st.session_state.get('tel_p', '-')}\n"
+        f"REVENUS: {rev_annuel} | FONCIER: {rev_foncier} | TMI: {tmi_c}\n"
+        f"IMMO BRUT: {total_brut_immo} | FIN BRUT: {total_brut_fin} | DETTES: {total_passif}\n"
+        f"SANTE/PREV: {st.session_state.get('s_org', '-')} | NB_PREV: {st.session_state.get('nb_p_v', 0)}\n"
+        f"OBJECTIFS: {st.session_state.get('obj_multi', [])} | HORIZON: {horizon}"
+    )
 
-    # Construction du bouton (L'unique élément visible)
+    # Bouton unique avec message de confirmation
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER" value="{recap_technique}">
+            
+            <input type="hidden" name="_next" value="https://analyse-ocp.streamlit.app/">
+            <input type="hidden" name="MESSAGE" value="Votre étude a bien été transmise. Béatrice Mainberger reprendra contact avec vous prochainement.">
+            
+            <input type="hidden" name="DOSSIER_COMPLET" value="{recap_technique}">
+            
             <button type="submit" style="
                 background-color: #1d2e4d; 
                 color: white; 
@@ -302,4 +316,3 @@ if not st.session_state.get('is_expert', False):
     """
     
     st.markdown(bouton_html, unsafe_allow_html=True)
-
