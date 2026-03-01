@@ -1,15 +1,30 @@
 import streamlit as st
 from datetime import date
+import json
 
-# 1. Configuration de la page
-st.set_page_config(page_title="OCP Patrimoine - Bilan Complet", page_icon="🛡️", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-st.title("🛡️ OCP Patrimoine - Bilan et Analyse Global")
-st.markdown("---")
+# Style visuel (couleurs et bouton vert)
+st.markdown("""
+    <style>
+    .main { background-color: #ffffff; }
+    div.stButton > button {
+        background-color: #26e291; color: #1a2b49; border-radius: 8px;
+        padding: 0.7em 2.5em; font-weight: bold; border: none;
+    }
+    .hero-title { font-size: 3rem; font-weight: 800; color: #1a2b49; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- INITIALISATION DES TOTAUX & VARIABLES ---
+# Préparation des variables de calcul
+if 'page' not in st.session_state: st.session_state['page'] = 'home'
 total_brut_immo = 0.0
 total_brut_fin = 0.0
+total_passif = 0.0
+mensualites_totales = 0.0
+pre_conj = ""
+nom_conj = ""
 total_passif = 0.0
 mensualites_totales = 0.0  # Pour le calcul du budget
 pre_conj = ""
