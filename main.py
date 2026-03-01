@@ -272,7 +272,6 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
-# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     st.header("🏁 Terminer mon bilan")
@@ -341,3 +340,4 @@ if not st.session_state.get('is_expert', False):
         </form>
     """
     st.markdown(form_html, unsafe_allow_html=True)
+
