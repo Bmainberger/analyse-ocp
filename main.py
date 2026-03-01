@@ -1,21 +1,39 @@
 import streamlit as st
-from datetime import date
-import json
 
-# Configuration de la page
-st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
+# --- CONFIGURATION DE LA PAGE ---
+st.set_page_config(page_title="OCP Patrimoine - Diagnostic", layout="wide")
 
-# Style visuel (couleurs et bouton vert)
+# --- SYSTÈME DE CONNEXION DISCRET (SIDEBAR) ---
+if 'is_expert' not in st.session_state:
+    st.session_state['is_expert'] = False
+
+with st.sidebar:
+    st.title("🔐 Accès OCP")
+    code_saisi = st.text_input("Code Expert (Optionnel)", type="password")
+    if code_saisi == "ADMINOCP":
+        st.session_state['is_expert'] = True
+        st.success("👨‍💼 MODE EXPERT ACTIVÉ")
+    else:
+        st.session_state['is_expert'] = False
+        st.caption("Visiteur : Remplissez le formulaire ci-contre.")
+
+# --- PAGE D'ACCUEIL / PRÉSENTATION ---
+st.title("🏢 OCP Patrimoine : Votre Diagnostic en ligne")
 st.markdown("""
-    <style>
-    .main { background-color: #ffffff; }
-    div.stButton > button {
-        background-color: #26e291; color: #1a2b49; border-radius: 8px;
-        padding: 0.7em 2.5em; font-weight: bold; border: none;
-    }
-    .hero-title { font-size: 3rem; font-weight: 800; color: #1a2b49; }
-    </style>
-    """, unsafe_allow_html=True)
+### Bienvenue sur votre espace de diagnostic patrimonial.
+Prenez 5 minutes pour réaliser une photographie complète de vos actifs. 
+---
+""")
+
+# --- COORDONNÉES DU PROSPECT ---
+st.subheader("👤 Vos Coordonnées")
+col_id1, col_id2 = st.columns(2)
+with col_id1:
+    nom_client = st.text_input("Nom et Prénom")
+with col_id2:
+    email_client = st.text_input("Email ou Téléphone")
+
+# --- LA SUITE DE VOTRE CODE (NE PAS TOUCHER EN DESSOUS) ---
 
 # Préparation des variables de calcul
 if 'page' not in st.session_state: st.session_state['page'] = 'home'
