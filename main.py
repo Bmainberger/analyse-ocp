@@ -277,33 +277,31 @@ if not st.session_state.get('is_expert', False):
     
     mon_email = "bmainberger@ocp-patrimoine.com" 
     
-    # Préparation du dossier technique (Sections 1 à 11)
-    # C'est ce bloc que vous recevrez par email
+    # Ce bloc contient les 11 modules mais ne s'affiche pas à l'écran
     recap_technique = (
         f"CLIENT: {nom_client} {prenom_client}\n"
         f"SITUATION: {situation} | ENFANTS: {nb_enfants}\n"
         f"CONTACT: {st.session_state.get('mail_p', '-')} | TEL: {st.session_state.get('tel_p', '-')}\n"
         f"REVENUS: {rev_annuel} | FONCIER: {rev_foncier} | TMI: {tmi_c}\n"
-        f"IMMO BRUT: {total_brut_immo} | FIN BRUT: {total_brut_fin} | DETTES: {total_passif}\n"
-        f"SANTE/PREV: {st.session_state.get('s_org', '-')} | NB_PREV: {st.session_state.get('nb_p_v', 0)}\n"
-        f"OBJECTIFS: {st.session_state.get('obj_multi', [])} | HORIZON: {horizon}"
+        f"IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif}\n"
+        f"SANTE: {st.session_state.get('s_org', '-')} | NB_PREV: {st.session_state.get('nb_p_v', 0)}\n"
+        f"OBJECTIFS: {st.session_state.get('obj_multi', [])} | HORIZON: {horizon} | PROFIL: {profil_r}"
     )
 
-    # Bouton unique avec message de confirmation
+    # Le bouton propre (le client ne verra que lui)
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            
             <input type="hidden" name="_next" value="https://analyse-ocp.streamlit.app/">
-            <input type="hidden" name="MESSAGE" value="Votre étude a bien été transmise. Béatrice Mainberger reprendra contact avec vous prochainement.">
+            <input type="hidden" name="MESSAGE_CONFIRMATION" value="Merci, votre étude a été transmise avec succès.">
             
-            <input type="hidden" name="DOSSIER_COMPLET" value="{recap_technique}">
+            <input type="hidden" name="DOSSIER_TECHNIQUE" value="{recap_technique}">
             
             <button type="submit" style="
                 background-color: #1d2e4d; 
                 color: white; 
-                padding: 20px; 
+                padding: 18px; 
                 font-size: 18px; 
                 border-radius: 8px; 
                 width: 100%; 
@@ -314,5 +312,4 @@ if not st.session_state.get('is_expert', False):
             </button>
         </form>
     """
-    
     st.markdown(bouton_html, unsafe_allow_html=True)
