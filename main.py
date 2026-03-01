@@ -1,20 +1,65 @@
 import streamlit as st
 from datetime import date
+import json
 
-# 1. Configuration de la page
-st.set_page_config(page_title="OCP Patrimoine - Bilan Complet", page_icon="🛡️", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-st.title("🛡️ OCP Patrimoine - Bilan et Analyse Global")
-st.markdown("---")
+# Style visuel (couleurs et bouton vert)
+st.markdown("""
+    <style>
+    .main { background-color: #ffffff; }
+    div.stButton > button {
+        background-color: #26e291; color: #1a2b49; border-radius: 8px;
+        padding: 0.7em 2.5em; font-weight: bold; border: none;
+    }
+    .hero-title { font-size: 3rem; font-weight: 800; color: #1a2b49; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- INITIALISATION DES TOTAUX & VARIABLES ---
+# Préparation des variables de calcul
+if 'page' not in st.session_state: st.session_state['page'] = 'home'
 total_brut_immo = 0.0
 total_brut_fin = 0.0
+total_passif = 0.0
+mensualites_totales = 0.0
+pre_conj = ""
+nom_conj = ""
 total_passif = 0.0
 mensualites_totales = 0.0  # Pour le calcul du budget
 pre_conj = ""
 nom_conj = ""
 
+# --- ÉTAPE 2 : ACCUEIL ET SÉCURITÉ ---
+if st.session_state['page'] == 'home':
+    st.markdown('<h1 class="hero-title">Votre stratégie patrimoniale commence ici.</h1>', unsafe_allow_html=True)
+    if st.button("DÉMARRER MON ANALYSE"):
+        st.session_state['page'] = 'auth'
+        st.rerun()
+    st.stop()
+
+elif st.session_state['page'] == 'auth':
+    st.subheader("🔐 Accès réservé")
+    code = st.text_input("Veuillez saisir votre code d'accès confidentiel :", type="password")
+    
+    col_a1, col_a2 = st.columns(2)
+    with col_a1:
+        if st.button("Valider"):
+            if code == "OCP2026": # Code pour vos clients
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = False
+                st.rerun()
+            elif code == "ADMINOCP": # Votre code à vous (Béatrice)
+                st.session_state['page'] = 'formulaire'
+                st.session_state['is_expert'] = True
+                st.rerun()
+            else:
+                st.error("Code incorrect.")
+    with col_a2:
+        if st.button("← Retour"):
+            st.session_state['page'] = 'home'
+            st.rerun()
+    st.stop()
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
@@ -231,45 +276,59 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court terme", "Moyen terme", "Long terme", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- CALCUL PATRIMOINE NET DANS LA BARRE LATÉRALE ---
-st.sidebar.title("📊 Synthèse Patrimoniale")
-pat_brut = total_brut_immo + total_brut_fin
-pat_net = pat_brut - total_passif
-capa_epargne = reste_vivre_brut - mensualites_totales
+# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
+if st.session_state.get('is_expert', False):
+    st.sidebar.markdown("---")
+    st.sidebar.title("📊 Synthèse Expert")
+    
+    # Calculs de base
+    pat_brut = total_brut_immo + total_brut_fin
+    pat_net = pat_brut - total_passif
+    capa_epargne = reste_vivre_brut - mensualites_totales
 
-st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
-st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois", delta="Flux libre")
-st.sidebar.markdown("---")
-st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
-st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
-
-# --- SECTION 10 : RÉSUMÉ FINAL ---
-st.markdown("---")
-if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-    st.success("Analyse OCP terminée !")
-    r1, r2 = st.columns(2)
-    with r1:
-        st.subheader("📋 État Civil")
-        st.write(f"**Client :** {prenom_client} {nom_client}")
-        st.write(f"**Situation :** {situation}")
-        if situation in ["Marié(e)", "Pacsé(e)"]:
-            st.write(f"**Conjoint :** {pre_conj} {nom_conj}")
-    with r2:
-        st.subheader("💰 Bilan Chiffré")
-        st.metric("NET PATRIMONIAL", f"{pat_net:,.0f} €".replace(",", " "))
-        st.metric("ÉPARGNE MENSUELLE LIBRE", f"{capa_epargne:,.0f} €")
+    # Affichage dans la colonne de gauche (Sidebar)
+    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+    st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois")
+    st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
+    st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
     
     st.markdown("---")
-    r3, r4 = st.columns(2)
-    with r3:
-        st.subheader("🎯 Objectifs & Profil")
-        if obj_prioritaires:
-            st.write(f"**Priorités :** {', '.join(obj_prioritaires)}")
-        st.write(f"**Horizon :** {horizon}")
-        st.write(f"**Profil :** {profil_r}")
-    with r4:
-        st.subheader("🛡️ Protection")
-        st.write(f"**Contrat Santé :** {s_org if s_org else 'Non saisi'}")
-        st.write(f"**Épargne dispo :** {total_brut_fin:,.0f} €".replace(",", " "))
+    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+        st.balloons()
+        st.header("📋 Diagnostic Patrimonial OCP")
+        
+        # 1. ANALYSE DES CHIFFRES CLÉS
+        col_an1, col_an2, col_an3 = st.columns(3)
+        with col_an1:
+            ratio_immo = (total_brut_immo / pat_brut * 100) if pat_brut > 0 else 0
+            st.metric("Poids Immobilier", f"{ratio_immo:.1f}%")
+        with col_an2:
+            st.metric("Profil Client", profil_r)
+        with col_an3:
+            st.metric("Horizon", horizon)
 
-st.info("Bilan complet prêt.")
+        # 2. PRÉCONISATIONS AUTOMATIQUES
+        st.subheader("💡 Préconisations de l'Expert")
+        if ratio_immo > 70:
+            st.warning("⚠️ **Déséquilibre Immobilier :** Le patrimoine est très exposé à l'immobilier. Envisager une diversification financière.")
+        else:
+            st.success("✅ **Cohérence :** L'allocation semble équilibrée.")
+
+        # 3. TRANSMISSION & SUCCESSION
+        st.subheader("🧬 Transmission & Succession")
+        base_taxable = max(0, pat_net - 100000)
+        droits_estimes = base_taxable * 0.20
+        st.write(f"Estimation des droits de mutation (hors AV) : **{droits_estimes:,.0f} €**".replace(",", " "))
+        
+        # 4. ZONE DE NOTES
+        st.text_area("✍️ Notes de l'expert :", placeholder="Saisissez vos commentaires ici...")
+
+# --- BOUTON DE FIN POUR LE CLIENT (VISIBLE UNIQUEMENT SI PAS EXPERT) ---
+if not st.session_state.get('is_expert', False):
+    st.markdown("---")
+    st.subheader("🏁 Fin de la saisie")
+    st.write("Merci d'avoir complété votre profil. Cliquez ci-dessous pour transmettre vos informations.")
+    
+    if st.button("📤 ENVOYER MON DOSSIER"):
+        st.balloons()
+        st.success("Vos informations ont été transmises avec succès.")
