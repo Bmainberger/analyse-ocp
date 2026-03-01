@@ -276,20 +276,24 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court terme", "Moyen terme", "Long terme", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- CALCUL PATRIMOINE NET (VISIBLE UNIQUEMENT SI CODE ADMINOCP) ---
+# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
 if st.session_state.get('is_expert', False):
+    st.sidebar.markdown("---")
     st.sidebar.title("📊 Synthèse Expert")
+    
+    # On s'assure que les calculs sont faits
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
     capa_epargne = reste_vivre_brut - mensualites_totales
 
+    # Affichage dans la colonne de gauche (Sidebar)
     st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
     st.sidebar.metric("ÉPARGNE DISPONIBLE", f"{capa_epargne:,.0f} €/mois")
-    st.sidebar.markdown("---")
     st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
     st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
     
+    # Bouton d'action final au centre
     st.markdown("---")
     if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
         st.balloons()
-        st.success("Analyse prête pour l'exportation (Mode Expert activé).")
+        st.success("Analyse prête pour l'exportation (Mode Expert).")
