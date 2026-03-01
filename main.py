@@ -275,41 +275,27 @@ if st.session_state.get('is_expert', False):
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
-    mon_email = "bmainberger@ocp-patrimoine.com" 
-    
-    # Ce bloc contient les 11 modules mais ne s'affiche pas à l'écran
-    recap_technique = (
-        f"CLIENT: {nom_client} {prenom_client}\n"
-        f"SITUATION: {situation} | ENFANTS: {nb_enfants}\n"
-        f"CONTACT: {st.session_state.get('mail_p', '-')} | TEL: {st.session_state.get('tel_p', '-')}\n"
-        f"REVENUS: {rev_annuel} | FONCIER: {rev_foncier} | TMI: {tmi_c}\n"
-        f"IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif}\n"
-        f"SANTE: {st.session_state.get('s_org', '-')} | NB_PREV: {st.session_state.get('nb_p_v', 0)}\n"
-        f"OBJECTIFS: {st.session_state.get('obj_multi', [])} | HORIZON: {horizon} | PROFIL: {profil_r}"
+    # Préparation technique du dossier (11 modules)
+    # J'utilise des noms simples pour éviter tout conflit de caractères
+    infos_bilan = (
+        f"CLIENT: {prenom_client} {nom_client} | "
+        f"SITUATION: {situation} | ENFANTS: {nb_enfants} | "
+        f"REVENUS: {rev_annuel} | TMI: {tmi_c} | "
+        f"IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif} | "
+        f"OBJECTIFS: {st.session_state.get('obj_multi', [])} | HORIZON: {horizon}"
     )
 
-    # Le bouton propre (le client ne verra que lui)
+    # Le bouton HTML (Le client ne verra QUE le bouton bleu)
+    # J'utilise des guillemets simples pour l'intérieur afin d'éviter les conflits
     bouton_html = f"""
-        <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_next" value="https://analyse-ocp.streamlit.app/">
-            <input type="hidden" name="MESSAGE_CONFIRMATION" value="Merci, votre étude a été transmise avec succès.">
-            
-            <input type="hidden" name="DOSSIER_TECHNIQUE" value="{recap_technique}">
-            
-            <button type="submit" style="
-                background-color: #1d2e4d; 
-                color: white; 
-                padding: 18px; 
-                font-size: 18px; 
-                border-radius: 8px; 
-                width: 100%; 
-                border: none; 
-                cursor: pointer; 
-                font-weight: bold;">
+        <form action='https://formsubmit.co/bmainberger@ocp-patrimoine.com' method='POST'>
+            <input type='hidden' name='_subject' value='Nouveau Bilan OCP : {nom_client}'>
+            <input type='hidden' name='_captcha' value='false'>
+            <input type='hidden' name='DOSSIER_COMPLET' value='{infos_bilan}'>
+            <button type='submit' style='background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;'>
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
+    
     st.markdown(bouton_html, unsafe_allow_html=True)
