@@ -281,7 +281,7 @@ if st.session_state.get('is_expert', False):
     st.sidebar.markdown("---")
     st.sidebar.title("📊 Synthèse Expert")
     
-    # On s'assure que les calculs sont faits
+    # Calculs de base
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
     capa_epargne = reste_vivre_brut - mensualites_totales
@@ -292,12 +292,9 @@ if st.session_state.get('is_expert', False):
     st.sidebar.write(f"**Patrimoine Brut :** {pat_brut:,.0f} €")
     st.sidebar.write(f"**Total Dettes :** {total_passif:,.0f} €")
     
-    # Bouton d'action final au centre
     st.markdown("---")
-    # --- BOUTON DE GÉNÉRATION DU RAPPORT (EXPERT UNIQUEMENT) ---
     if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
         st.balloons()
-        st.divider()
         st.header("📋 Diagnostic Patrimonial OCP")
         
         # 1. ANALYSE DES CHIFFRES CLÉS
@@ -314,33 +311,24 @@ if st.session_state.get('is_expert', False):
         st.subheader("💡 Préconisations de l'Expert")
         if ratio_immo > 70:
             st.warning("⚠️ **Déséquilibre Immobilier :** Le patrimoine est très exposé à l'immobilier. Envisager une diversification financière.")
-        elif ratio_immo < 30:
-            st.info("ℹ️ **Sous-exposition Immobilière :** Le patrimoine est majoritairement financier.")
         else:
-            st.success("✅ **Cohérence :** L'allocation semble équilibrée entre immobilier et financier.")
+            st.success("✅ **Cohérence :** L'allocation semble équilibrée.")
 
         # 3. TRANSMISSION & SUCCESSION
         st.subheader("🧬 Transmission & Succession")
         base_taxable = max(0, pat_net - 100000)
-        droits_estimes = base_taxable * 0.20 # Simulation simplifiée à 20%
+        droits_estimes = base_taxable * 0.20
         st.write(f"Estimation des droits de mutation (hors AV) : **{droits_estimes:,.0f} €**".replace(",", " "))
-        st.caption("Calcul basé sur un abattement de 100 000 € (parent/enfant) et une tranche à 20%.")
+        
+        # 4. ZONE DE NOTES
+        st.text_area("✍️ Notes de l'expert :", placeholder="Saisissez vos commentaires ici...")
 
-        # 4. ZONE DE NOTES LIBRES
-        st.text_area("✍️ Notes de l'expert :", placeholder="Commentaires personnalisés pour le client...")
-
-# --- LE NOUVEAU BLOC POUR LE CLIENT (NE PAS TOUCHER) ---
+# --- BOUTON DE FIN POUR LE CLIENT (VISIBLE UNIQUEMENT SI PAS EXPERT) ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     st.subheader("🏁 Fin de la saisie")
-    if st.button("📤 ENVOYER MON DOSSIER"):
-        st.balloons()
-        st.success("Vos informations ont été transmises avec succès.")--
-if not st.session_state.get('is_expert', False):
-    st.markdown("---")
-    st.subheader("🏁 Fin de la saisie")
-    st.write("Merci d'avoir complété votre profil. Cliquez sur le bouton ci-dessous pour transmettre vos informations à votre conseiller.")
+    st.write("Merci d'avoir complété votre profil. Cliquez ci-dessous pour transmettre vos informations.")
     
     if st.button("📤 ENVOYER MON DOSSIER"):
         st.balloons()
-        st.success("Vos informations ont été transmises avec succès. Votre conseiller OCP Patrimoine reprendra contact avec vous prochainement.")
+        st.success("Vos informations ont été transmises avec succès.")
