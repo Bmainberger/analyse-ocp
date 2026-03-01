@@ -275,16 +275,44 @@ if st.session_state.get('is_expert', False):
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     st.header("🏁 Terminer mon bilan")
-    st.write("Cliquez ci-dessous pour transmettre votre dossier à OCP Patrimoine.")
+    st.write("Cliquez ci-dessous pour transmettre votre dossier complet à OCP Patrimoine.")
 
-    # ATTENTION : Remplacez cet email par votre vraie adresse !
+    # Destinataire
     mon_email = "bmainberger@ocp-patrimoine.com" 
+
+    # Préparation de l'étude complète pour l'email
+    etude_complete = f"""
+    --- ÉTAT CIVIL ---
+    Client : {prenom_client} {nom_client}
+    Situation : {situation}
+    Enfants : {nb_enfants}
+    Contact : {st.session_state.get('tel_p', 'Non renseigné')} / {st.session_state.get('mail_p', 'Non renseigné')}
+    
+    --- REVENUS & BUDGET ---
+    Revenu Annuel : {rev_annuel} €
+    Revenus Fonciers : {rev_foncier} €
+    TMI : {tmi_c}
+    Reste à vivre mensuel estimé : {reste_vivre_brut:,.0f} €
+    
+    --- PATRIMOINE ---
+    Total Immobilier Brut : {total_brut_immo:,.0f} €
+    Total Financier Brut : {total_brut_fin:,.0f} €
+    Total Passif (Dettes) : {total_passif:,.0f} €
+    
+    --- OBJECTIFS ---
+    Priorités : {", ".join(st.session_state.get('obj_multi', []))}
+    Horizon : {horizon}
+    Profil de risque : {profil_r}
+    """
 
     form_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="Client" value="{prenom_client} {nom_client}">
-            <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
+            <input type="hidden" name="_subject" value="NOUVEAU BILAN COMPLET : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="Nom_Complet" value="{prenom_client} {nom_client}">
+            <textarea name="DETAIL_DE_L_ETUDE" style="display:none;">{etude_complete}</textarea>
+            
             <button type="submit" style="
                 background-color: #1d2e4d; 
                 color: white; 
@@ -295,7 +323,7 @@ if not st.session_state.get('is_expert', False):
                 border: none; 
                 cursor: pointer;
                 font-weight: bold;">
-                ✅ TRANSMETTRE MON DOSSIER
+                ✅ TRANSMETTRE MON DOSSIER COMPLET
             </button>
         </form>
     """
