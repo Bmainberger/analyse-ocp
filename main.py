@@ -273,14 +273,14 @@ st.header("🎯 11. Objectifs & Priorités")
 st.markdown("---")
 
 if not st.session_state.get('is_expert', False):
-    # 1. Préparation du lien (Invisible sur l'écran)
+    # 1. On prépare l'adresse (Invisible sur l'écran car pas de st.write)
     base_url = "https://analyse-ocp.streamlit.app/?"
     lien_auto = f"{base_url}nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
 
-    # 2. Préparation du mail pour vous (avec les chevrons < >)
+    # 2. On prépare le contenu du mail pour VOUS (avec les < > pour Outlook)
     corps_du_mail = f"DOSSIER : {prenom_client} {nom_client} \n\n LIEN ANALYSE : <{lien_auto}>"
 
-    # 3. Le bouton (Seul cet élément est visible sur le site)
+    # 3. Le bouton bleu (Seul cet élément sera visible)
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
