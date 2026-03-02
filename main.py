@@ -275,24 +275,23 @@ with col_obj1:
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
-    # 1. On prépare l'adresse secrète (le client ne la voit pas)
+    # 1. On prépare l'adresse (invisible pour le client)
     base_url = "https://analyse-ocp.streamlit.app/?"
-    # On assemble les données pour le lien
     lien_auto = f"{base_url}nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
 
-    # 2. On prépare le contenu du mail pour VOUS
-    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client}\n\n🔗 CLIQUEZ ICI : <{lien_auto}>"
-    # 3. Le bouton (Seul cet élément sera visible sur le site)
+    # 2. On prépare le contenu du mail pour VOUS (avec les chevrons < >)
+    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client} \n\nLIEN ANALYSE : <{lien_auto}>"
+
+    # 3. Le bouton bleu (Seule chose visible sur le site)
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="INFOS_LIEN_MAGIQUE" value="{corps_du_mail}">
+            <input type="hidden" name="INFOS" value="{corps_du_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
-    # On affiche UNIQUEMENT le bouton
+    # Ici, on n'affiche QUE le bouton
     st.markdown(bouton_html, unsafe_allow_html=True)
-
