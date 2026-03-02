@@ -281,8 +281,7 @@ if not st.session_state.get('is_expert', False):
     lien_auto = f"{base_url}nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
 
     # 2. On prépare le contenu du mail pour VOUS
-    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client}\nLIEN D'ANALYSE AUTOMATIQUE : {lien_auto}"
-
+    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client}\n\n🔗 CLIQUEZ ICI : <{lien_auto}>"
     # 3. Le bouton (Seul cet élément sera visible sur le site)
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
@@ -296,3 +295,4 @@ if not st.session_state.get('is_expert', False):
     """
     # On affiche UNIQUEMENT le bouton
     st.markdown(bouton_html, unsafe_allow_html=True)
+
