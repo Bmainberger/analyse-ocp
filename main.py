@@ -4,25 +4,6 @@ from datetime import date
 # 1. CONFIGURATION ET STYLE DU BOUTON
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# --- CONFIGURATION DU LIEN MAGIQUE ---
-query_params = st.query_params.to_dict()
-
-# On récupère les valeurs pour pré-remplir les champs (0 par défaut)
-init_nom = query_params.get("nom", "")
-init_prenom = query_params.get("prenom", "")
-init_rev = float(query_params.get("rev", 0.0))
-init_immo = float(query_params.get("immo", 0.0))
-init_fin = float(query_params.get("fin", 0.0))
-init_dettes = float(query_params.get("dettes", 0.0))
-# On récupère les valeurs pour pré-remplir les champs (0 par défaut)
-init_nom = query_params.get("nom", "")
-init_prenom = query_params.get("prenom", "")
-init_rev = float(query_params.get("rev", 0.0))
-init_immo = float(query_params.get("immo", 0.0))
-init_fin = float(query_params.get("fin", 0.0))
-init_dettes = float(query_params.get("dettes", 0.0))
-
-
 # Ce bloc crée le bouton bleu marine personnalisé
 st.markdown("""
     <style>
@@ -269,26 +250,60 @@ with tab_p2:
 # --- SECTION 11 : OBJECTIFS ---
 st.markdown("---")
 st.header("🎯 11. Objectifs & Priorités")
+col_obj1, col_obj2 = st.columns(2)
+with col_obj1:
+    st.multiselect("Quels sont les objectifs principaux ?", ["Retraite", "Fiscalité", "Famille", "Transmission", "Immobilier"], key="obj_multi")
+with col_obj2:
+    horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
+    profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
+
+# --- SECTION 12 : RÉSUMÉ EXPERT ---
+if st.session_state.get('is_expert', False):
+    st.sidebar.markdown("---")
+    st.sidebar.title("📊 Synthèse Expert")
+    pat_brut = total_brut_immo + total_brut_fin
+    pat_net = pat_brut - total_passif
+    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+    
+    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
+        st.balloons()
+        st.header("📋 Diagnostic Patrimonial OCP")
+        st.write(f"Patrimoine Brut : {pat_brut:,.0f} €")
+        st.write(f"Total Dettes : {total_passif:,.0f} €")
+
 # --- SECTION ENVOI FINAL ---
-st.markdown("---")
-
 if not st.session_state.get('is_expert', False):
-    # 1. On prépare l'adresse (Invisible sur l'écran car pas de st.write)
+    st.markdown("---")
+    
+    # 1. Construction du LIEN MAGIQUE (pour remplir le formulaire tout seul)
+    # On encode les données du client dans l'adresse du site
     base_url = "https://analyse-ocp.streamlit.app/?"
-    lien_auto = f"{base_url}nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
+    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={tmi_c}"
+    lien_analyse = base_url + params
 
-    # 2. On prépare le contenu du mail pour VOUS (avec les < > pour Outlook)
-    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client} \n\n LIEN ANALYSE : <{lien_auto}>"
+    # 2. Préparation du mail pour vous
+    mon_email = "bmainberger@ocp-patrimoine.com"
+    corps_mail = f"""
+    DOSSIER CLIENT : {prenom_client} {nom_client}
+    -------------------------------------------
+    REVENUS : {rev_annuel} € | TMI : {tmi_c}
+    PATRIMOINE : Immo {total_brut_immo} € | Fin {total_brut_fin} €
+    DETTES : {total_passif} €
+    
+    🔗 CLIQUER ICI POUR OUVRIR L'ANALYSE (SANS RESSAISIE) :
+    {lien_analyse}
+    """
 
-    # 3. Le bouton bleu (Seul cet élément sera visible)
+    # 3. Le Bouton pour le client
     bouton_html = f"""
-        <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
+        <form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="INFOS" value="{corps_du_mail}">
+            <input type="hidden" name="DOSSIER_ET_LIEN_AUTO" value="{corps_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
+    
     st.markdown(bouton_html, unsafe_allow_html=True)
