@@ -269,20 +269,18 @@ with tab_p2:
 # --- SECTION 11 : OBJECTIFS ---
 st.markdown("---")
 st.header("🎯 11. Objectifs & Priorités")
-col_obj1, col_obj2 = st.columns(2)
-with col_obj1:
-   # --- SECTION ENVOI FINAL ---
+# --- SECTION ENVOI FINAL ---
+st.markdown("---")
+
 if not st.session_state.get('is_expert', False):
-    st.markdown("---")
-    
-    # Préparation du lien (Invisible sur l'écran)
+    # 1. Préparation du lien (Invisible sur l'écran)
     base_url = "https://analyse-ocp.streamlit.app/?"
     lien_auto = f"{base_url}nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
 
-    # Préparation du mail pour vous
-    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client} \n\nLIEN ANALYSE : <{lien_auto}>"
+    # 2. Préparation du mail pour vous (avec les chevrons < >)
+    corps_du_mail = f"DOSSIER : {prenom_client} {nom_client} \n\n LIEN ANALYSE : <{lien_auto}>"
 
-    # Affichage UNIQUEMENT du bouton
+    # 3. Le bouton (Seul cet élément est visible sur le site)
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
@@ -293,4 +291,4 @@ if not st.session_state.get('is_expert', False):
             </button>
         </form>
     """
-    st.markdown(bouton_html, unsafe_allow_html=True) 
+    st.markdown(bouton_html, unsafe_allow_html=True)
