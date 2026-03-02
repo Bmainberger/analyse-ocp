@@ -14,6 +14,13 @@ init_rev = float(query_params.get("rev", 0.0))
 init_immo = float(query_params.get("immo", 0.0))
 init_fin = float(query_params.get("fin", 0.0))
 init_dettes = float(query_params.get("dettes", 0.0))
+# On récupère les valeurs pour pré-remplir les champs (0 par défaut)
+init_nom = query_params.get("nom", "")
+init_prenom = query_params.get("prenom", "")
+init_rev = float(query_params.get("rev", 0.0))
+init_immo = float(query_params.get("immo", 0.0))
+init_fin = float(query_params.get("fin", 0.0))
+init_dettes = float(query_params.get("dettes", 0.0))
 
 
 # Ce bloc crée le bouton bleu marine personnalisé
@@ -319,4 +326,5 @@ if not st.session_state.get('is_expert', False):
     """
     
     st.markdown(bouton_html, unsafe_allow_html=True)
+
 
