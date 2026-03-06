@@ -237,51 +237,23 @@ if st.session_state.get('is_expert', False):
     st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
     
     if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-        # --- SECTION 12 : RÉSUMÉ EXPERT (MOTEUR HARVEST CORRIGÉ) ---
-if st.session_state.get('is_expert', False):
-    st.markdown("---")
-    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
-    
-    # CALCULS DES RATIOS
-    pat_brut = total_brut_immo + total_brut_fin
-    pat_net = pat_brut - total_passif
-    
-    col_m1, col_m2, col_m3 = st.columns(3)
-    with col_m1:
-        st.metric("Patrimoine Net", f"{pat_net:,.0f} €".replace(",", " "))
-    with col_m2:
-        st.metric("Endettement", f"{(total_passif/pat_brut*100) if pat_brut > 0 else 0:.1f} %")
-    with col_m3:
-        pension_estim = (rev_annuel / 12) * 0.55
-        st.metric("Est. Retraite", f"{pension_estim:,.0f} € / mois")
-
-    # GRAPHIQUE DE RÉPARTITION
-    st.markdown("### 📈 Structure des Actifs")
-    if pat_brut > 0:
-        import pandas as pd
-        df_chart = pd.DataFrame({
-            "Répartition": ["Immobilier", "Financier"],
-            "Valeur": [total_brut_immo, total_brut_fin]
-        })
-        st.bar_chart(df_chart.set_index("Répartition"))
-            
-    # ZONE DE CONSEILS
-    st.subheader("📝 Préconisations de l'Expert")
-    st.text_area("Observations et stratégie :", placeholder="Saisissez ici vos conseils sur la TMI, le levier de crédit...", key="expert_obs")
-
-    if st.button("🚀 VALIDER L'ANALYSE"):
         st.balloons()
-        st.success("Analyse enregistrée !")
+        st.header("📋 Diagnostic Patrimonial OCP")
+        st.write(f"Patrimoine Brut : {pat_brut:,.0f} €")
+        st.write(f"Total Dettes : {total_passif:,.0f} €")
 
-# --- SECTION ENVOI FINAL (TOUJOURS À LA FIN) ---
+# --- SECTION ENVOI FINAL (CLIENT) ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
+    
+    # LIEN MAGIQUE CALCULÉ
     base_url = "https://analyse.ocp-patrimoine.com/?"
     params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
-    lien_auto = base_url + params
+    lien_analyse = base_url + params
     
-    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client} \nLIEN ANALYSE : <{lien_auto}>"
+    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client} \nLIEN AUTO : <{lien_analyse}>"
 
+    # BOUTON PROPRE (Le lien est caché dans l'envoi)
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
