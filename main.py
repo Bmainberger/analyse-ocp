@@ -230,38 +230,71 @@ with col_obj2:
 
 # --- SECTION 12 : RÉSUMÉ EXPERT (MODE ADMIN) ---
 if st.session_state.get('is_expert', False):
-    st.sidebar.markdown("---")
-    st.sidebar.title("📊 Synthèse Expert")
+    # --- SECTION 12 : RÉSUMÉ EXPERT (LE MOTEUR HARVEST) ---
+if st.session_state.get('is_expert', False):
+    st.markdown("---")
+    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
+    
+    # CALCULS DE STRUCTURE
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
-    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+    part_immo = (total_brut_immo / pat_brut * 100) if pat_brut > 0 else 0
+    part_fin = (total_brut_fin / pat_brut * 100) if pat_brut > 0 else 0
     
-    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-        st.balloons()
-        st.header("📋 Diagnostic Patrimonial OCP")
-        st.write(f"Patrimoine Brut : {pat_brut:,.0f} €")
-        st.write(f"Total Dettes : {total_passif:,.0f} €")
+    # 1. TABLEAU DE BORD DES RATIOS
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    with col_m1:
+        st.metric("Patrimoine Net", f"{pat_net:,.0f} €".replace(",", " "))
+    with col_m2:
+        st.metric("Endettement", f"{(total_passif/pat_brut*100) if pat_brut > 0 else 0:.1f} %")
+    with col_m3:
+        st.metric("Reste à vivre mensuel", f"{(rev_annuel/12) - (total_passif/12 if total_passif > 0 else 0):,.0f} €")
+    with col_m4:
+        # Score de liquidité (Conseil automatique)
+        score_liq = "✅ OK" if total_brut_fin > (rev_annuel/2) else "⚠️ FAIBLE"
+        st.metric("Indice de Liquidité", score_liq)
 
-# --- SECTION ENVOI FINAL (CLIENT) ---
-if not st.session_state.get('is_expert', False):
+    # 2. ANALYSE VISUELLE
+    st.markdown("### 📈 Répartition des Actifs")
+    col_g1, col_g2 = st.columns(2)
+    
+    with col_g1:
+        # On crée un petit tableau pour le graphique
+        df_chart = pd.DataFrame({
+            "Catégorie": ["Immobilier", "Financier"],
+            "Valeur": [total_brut_immo, total_brut_fin]
+        })
+        st.bar_chart(df_chart.set_index("Catégorie"))
+        
+
+    with col_g2:
+        st.info(f"**Analyse de l'expert :**\n\nVotre patrimoine est exposé à **{part_immo:.0f}% sur l'immobilier**. "
+                f"L'équilibre idéal pour votre profil devrait tendre vers 60/40.")
+
+    # 3. MOTEURS DE CALCULS AVANCÉS
     st.markdown("---")
+    c_inv1, c_inv2 = st.columns(2)
     
-    # LIEN MAGIQUE CALCULÉ
-    base_url = "https://analyse.ocp-patrimoine.com/?"
-    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
-    lien_analyse = base_url + params
-    
-    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client} \nLIEN AUTO : <{lien_analyse}>"
+    with c_inv1:
+        st.subheader("🎯 Diagnostic Retraite")
+        pension_estimee = (rev_annuel / 12) * 0.55
+        manque_a_gagner = (rev_annuel / 12) - pension_estimee
+        st.error(f"Perte de revenu estimée à 64 ans : -{manque_a_gagner:,.0f} € / mois")
+        st.write("Pour combler ce déficit, un capital de " + f"{manque_a_gagner * 300:,.0f} €" + " est nécessaire.")
+        
 
-    # BOUTON PROPRE (Le lien est caché dans l'envoi)
-    bouton_html = f"""
-        <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
-            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER" value="{corps_mail}">
-            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
-                🚀 TRANSMETTRE MON ÉTUDE
-            </button>
-        </form>
-    """
-    st.markdown(bouton_html, unsafe_allow_html=True)
+    with c_inv2:
+        st.subheader("🛡️ Audit de Prévoyance")
+        besoin_deces = rev_annuel * 3
+        st.warning(f"Besoin de protection familiale : {besoin_deces:,.0f} €")
+        st.write("C'est le capital nécessaire pour maintenir le niveau de vie de votre famille pendant 3 ans.")
+
+    # 4. ZONE DE RÉDACTION (S'affichera dans le PDF)
+    st.markdown("---")
+    st.subheader("📝 Préconisations personnalisées")
+    st.text_area("Note de synthèse (sera incluse dans le rapport final) :", 
+                 placeholder="Ex: Mise en place d'une stratégie LMNP pour optimiser la fiscalité foncière...")
+
+    if st.button("🚀 VALIDER L'ANALYSE"):
+        st.balloons()
+        st.success("L'analyse a été mise à jour et est prête pour l'édition du rapport.")
