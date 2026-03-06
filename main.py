@@ -5,7 +5,6 @@ import pandas as pd
 # 1. CONFIGURATION & STYLE
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# Style personnalisé pour le bouton bleu marine
 st.markdown("""
     <style>
     div.stButton > button:first-child {
@@ -26,9 +25,6 @@ total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
 mensualites_totales = 0.0
-rev_annuel = 0.0
-rev_foncier = 0.0
-reste_vivre_brut = 0.0
 
 # 3. GESTION ACCÈS EXPERT
 if 'is_expert' not in st.session_state:
@@ -113,7 +109,7 @@ with cp2:
     rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
     tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
-    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
+    age_ret = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 st.subheader("📊 3. bis Budget & Capacité d'Épargne")
 b_col1, b_col2 = st.columns(2)
@@ -187,7 +183,7 @@ for i in range(int(nb_pret_immo)):
         m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
         mensualites_totales += m_mens
 
-# --- SECTION 10 : REMARQUES (RÉTABLIE) ---
+# --- SECTION 10 : REMARQUES ---
 st.markdown("---")
 st.header("📝 10. Vos Remarques & Questions")
 remarques_client = st.text_area("Avez-vous des précisions à nous apporter ?", key="rem_cli")
@@ -202,79 +198,66 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT (MOTEUR STRATÉGIQUE CORRIGÉ) ---
+# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
 if st.session_state.get('is_expert', False):
     st.markdown("---")
-    st.header("📊 ANALYSE STRATÉGIQUE (STYLE BIG EXPERT)")
+    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
     
-    # Sécurisation des variables pour éviter les erreurs "rouges"
+    # CALCULS SÉCURISÉS (FILET ANTI-ROUGE)
     p_brut = float(total_brut_immo + total_brut_fin)
     p_net = float(p_brut - total_passif)
-    r_annuel = float(rev_annuel) if rev_annuel else 0.0
-    r_mensuel = float((r_annuel + rev_foncier) / 12) if (r_annuel + rev_foncier) > 0 else 0.0
-    a_retraite = int(age_ret) if 'age_ret' in locals() else 64
-
-    # 1️⃣ ANALYSE DE STRUCTURE
-    st.subheader("1. Analyse de Structure")
-    col_s1, col_s2 = st.columns(2)
-    with col_s1:
-        st.write("**Répartition estimée :**")
-        df_str = pd.DataFrame({
-            "Piliers": ["Précaution", "Rendement", "Plaisir"],
-            "Valeur": [total_brut_fin * 0.2, (total_brut_immo * 0.5), (total_brut_immo * 0.5)]
-        })
-        st.bar_chart(df_str.set_index("Piliers"))
-    with col_s2:
-        st.metric("Patrimoine Net Total", f"{p_net:,.0f} €".replace(",", " "))
-        ratio_immo = (total_brut_immo / p_brut * 100) if p_brut > 0 else 0
-        st.progress(min(ratio_immo/100, 1.0))
-        st.caption(f"Exposition Immobilière : {ratio_immo:.0f}%")
-
-    # 2️⃣ MOTEUR FISCAL
-    st.markdown("---")
-    st.subheader("2. Moteur Fiscal & Levier")
-    tmi_val = int(tmi_c.replace('%','')) if tmi_c else 0
-    # Calcul simplifié IR
-    impot_est = r_annuel * (tmi_val/100) * 0.7 # Estimation rapide base TMI
-    c_f1, c_f2 = st.columns(2)
-    c_f1.metric("Impôt estimé (Base TMI)", f"{impot_est:,.0f} €")
-    c_f2.write(f"🎯 **Levier fiscal potentiel :** Environ {impot_est * 0.5:,.0f} € mobilisables.")
-
-    # 3️⃣ AUDIT PRÉVOYANCE
-    st.markdown("---")
-    st.subheader("3. Audit de Prévoyance")
-    b_prev = r_annuel * 3
-    c_p1, c_p2 = st.columns(2)
-    with c_p1:
-        st.error(f"Besoin de protection : {b_prev:,.0f} €")
-    with c_p2:
-        st.write("Ce capital est nécessaire pour maintenir le train de vie familial pendant 3 ans.")
-
-    # 4️⃣ PROJECTION RETRAITE
-    st.markdown("---")
-    st.subheader("4. Projection Retraite")
-    retraite_est = r_mensuel * 0.55
-    gap = r_mensuel - retraite_est
-    cap_necessaire = gap * 12 / 0.04 if gap > 0 else 0
+    r_annuel_expert = float(rev_annuel) if rev_annuel else 0.0
+    r_mensuel_expert = (r_annuel_expert + float(rev_foncier)) / 12 if (r_annuel_expert + float(rev_foncier)) > 0 else 0.0
     
-    c_r1, c_r2 = st.columns(2)
-    c_r1.warning(f"Manque à gagner mensuel : {gap:,.0f} €")
-    c_r2.info(f"Capital à constituer : {cap_necessaire:,.0f} €")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Patrimoine Net", f"{p_net:,.0f} €".replace(",", " "))
+    c2.metric("Revenu Mensuel", f"{r_mensuel_expert:,.0f} €".replace(",", " "))
+    c3.metric("Endettement", f"{(total_passif/p_brut*100) if p_brut > 0 else 0:.1f} %")
 
-    st.text_area("Note de synthèse expert :", key="final_notes_expert")
-    if st.button("✅ FINALISER L'ANALYSE"):
+    st.markdown("### 🎯 Diagnostics")
+    tab_a, tab_b, tab_c, tab_d = st.tabs(["Structure", "Fiscalité", "Prévoyance", "Retraite"])
+    
+    with tab_a:
+        st.write("**Répartition des Actifs**")
+        df_st = pd.DataFrame({"Pilier": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
+        st.bar_chart(df_st.set_index("Pilier"))
+        
+
+    with tab_b:
+        try:
+            tmi_val = int(tmi_c.replace('%','')) if tmi_c else 30
+        except:
+            tmi_val = 30
+        impot_est = r_annuel_expert * (tmi_val / 100) * 0.7
+        st.write(f"Impôt annuel estimé : **{impot_est:,.0f} €**")
+        st.info(f"Levier fiscal potentiel : {impot_est * 0.5:,.0f} € / an")
+
+    with tab_c:
+        besoin = r_annuel_expert * 3
+        st.write(f"Besoin de protection familiale : **{besoin:,.0f} €**")
+        st.caption("Protection suggérée pour maintenir le train de vie (3 ans).")
+        
+
+    with tab_d:
+        retraite_est = r_mensuel_expert * 0.55
+        gap = r_mensuel_expert - retraite_est
+        st.write(f"Manque à gagner mensuel estimé : **{gap:,.0f} €**")
+        cap_a_faire = gap * 12 / 0.04 if gap > 0 else 0
+        st.warning(f"Capital à constituer pour compenser : {cap_a_faire:,.0f} €")
+
+    st.text_area("Note de synthèse expert :", key="final_expert_notes")
+    if st.button("✅ VALIDER L'ANALYSE"):
         st.balloons()
 
 # --- BOUTON ENVOI CLIENT ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
-    # On s'assure que toutes les variables existent pour le lien
-    nom_c = nom_client if nom_client else "Inconnu"
-    corps = f"Dossier de {nom_c}. Revenus: {rev_annuel}. Immo: {total_brut_immo}."
+    nom_cli = nom_client if nom_client else "Client"
+    corps_mail = f"Dossier de {nom_cli}. Revenus: {rev_annuel}. Patrimoine: {total_brut_immo + total_brut_fin}."
     
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
-            <input type="hidden" name="DOSSIER" value="{corps}">
+            <input type="hidden" name="DOSSIER" value="{corps_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
