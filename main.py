@@ -202,46 +202,127 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- SECTION 12 : RÉSUMÉ EXPERT (LE CERVEAU HARVEST) ---
+# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT (MOTEUR STRATÉGIQUE) ---
 if st.session_state.get('is_expert', False):
     st.markdown("---")
-    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
+    st.header("📊 ANALYSE STRATÉGIQUE (STYLE BIG EXPERT)")
     
-    pat_brut = total_brut_immo + total_brut_fin
-    pat_net = pat_brut - total_passif
+    # Préparation des variables de calcul (Sécurité contre les zéros)
+    pat_brut_total = total_brut_immo + total_brut_fin
+    pat_net_total = pat_brut_total - total_passif
+    rev_total_mensuel = (rev_annuel + rev_foncier) / 12
     
-    # 1. CHIFFRES CLÉS
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Patrimoine Net", f"{pat_net:,.0f} €")
-    c2.metric("Endettement", f"{(total_passif/pat_brut*100) if pat_brut > 0 else 0:.1f} %")
-    pension_estim = (rev_annuel / 12) * 0.55
-    c3.metric("Est. Retraite", f"{pension_estim:,.0f} € / mois")
-
-    # 2. GRAPHIQUE
-    if pat_brut > 0:
-        df_chart = pd.DataFrame({"Actifs": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
-        st.bar_chart(df_chart.set_index("Actifs"))
+    # ---------------------------------------------------------
+    # MOTEUR 1 : ANALYSE DE STRUCTURE (LE BILAN)
+    # ---------------------------------------------------------
+    st.subheader("1️⃣ Analyse de Structure")
+    col_str1, col_str2 = st.columns([1, 1])
+    
+    with col_str1:
+        # Ventilation (Estimation basée sur les types saisis)
+        # On considère "Plaisir" = Résidence Principale (approximé ici par l'immo total pour le test)
+        st.write("**Répartition du patrimoine :**")
+        structure_data = pd.DataFrame({
+            "Piliers": ["Précaution (Liquidités)", "Rendement (Immo/AV)", "Plaisir (Rés. Principale)"],
+            "Valeur": [total_brut_fin * 0.3, (total_brut_immo * 0.4) + (total_brut_fin * 0.7), total_brut_immo * 0.6]
+        })
+        st.bar_chart(structure_data.set_index("Piliers"))
         
 
-    # 3. PRÉCONISATIONS
-    st.subheader("💡 Préconisations de l'Expert")
-    st.text_area("Observations stratégiques :", key="expert_obs")
-    if st.button("🚀 VALIDER L'ANALYSE"):
-        st.balloons()
+    with col_str2:
+        st.info(f"**Patrimoine Net : {pat_net_total:,.0f} €**")
+        ratio_immo = (total_brut_immo / pat_brut_total * 100) if pat_brut_total > 0 else 0
+        if ratio_immo > 70:
+            st.warning(f"⚠️ Alerte : Exposition immobilière forte ({ratio_immo:.0f}%). Manque de liquidité potentiel.")
+        else:
+            st.success(f"✅ Structure équilibrée ({ratio_immo:.0f}% d'immobilier).")
 
-# --- BOUTON DE FIN (VERSION PROPRE) ---
+    # ---------------------------------------------------------
+    # MOTEUR 2 : LE MOTEUR FISCAL (ESTIMATION & LEVIER)
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("2️⃣ Moteur Fiscal & Levier")
+    
+    # Calcul simplifié de l'impôt (Barème rapide)
+    def estim_impot(revenu):
+        if revenu <= 11294: return 0
+        if revenu <= 28797: return (revenu - 11294) * 0.11
+        if revenu <= 82341: return (revenu - 28797) * 0.30 + 1925
+        return (revenu - 82341) * 0.41 + 17988
+
+    impot_estime = estim_impot(rev_annuel)
+    
+    col_fisc1, col_fisc2 = st.columns(2)
+    with col_fisc1:
+        st.metric("Impôt sur le Revenu Estime", f"{impot_estime:,.0f} €")
+        st.caption(f"Tranche Marginale d'Imposition actuelle : {tmi_c}")
+    
+    with col_fisc2:
+        levier_possible = impot_estime * 0.8 # Hypothèse de levier fiscal (ex: Pinel/PER)
+        st.write("🎯 **Potentiel de levier fiscal :**")
+        st.write(f"Vous pourriez réorienter environ **{levier_possible:,.0f} € / an** d'impôts vers la création de patrimoine.")
+
+    # ---------------------------------------------------------
+    # MOTEUR 3 : AUDIT DE PRÉVOYANCE (PROTECTION FAMILLE)
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("3️⃣ Audit de Prévoyance")
+    
+    besoin_deces = rev_annuel * 3  # Règle de base : 3 ans de revenus
+    besoin_education = nb_enfants * 50000 # Hypothèse 50k€ par enfant
+    besoin_total_prev = besoin_deces + besoin_education
+    
+    col_prev1, col_prev2 = st.columns(2)
+    with col_prev1:
+        st.error(f"Besoin de Couverture Total : {besoin_total_prev:,.0f} €")
+        st.caption("Calcul : 3 ans de revenus + Protection études enfants")
+    with col_prev2:
+        # On compare avec ce qui a été saisi en section 7
+        st.write("**Diagnostic :**")
+        st.write("Si votre capital prévoyance actuel est inférieur à ce montant, votre famille est exposée à une baisse de niveau de vie en cas d'aléa.")
+        
+
+    # ---------------------------------------------------------
+    # MOTEUR 4 : PROJECTION RETRAITE (LE "GAP")
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("4️⃣ Projection Retraite")
+    
+    taux_remplacement = 0.55 # Hypothèse moyenne cadre
+    retraite_estimee = rev_total_mensuel * taux_remplacement
+    manque_a_gagner = rev_total_mensuel - retraite_estimee
+    
+    col_ret1, col_ret2 = st.columns([1, 1])
+    with col_ret1:
+        st.write("**Écart de revenu à la retraite :**")
+        st.error(f"- {manque_a_gagner:,.0f} € / mois")
+        st.caption(f"Revenu actuel : {rev_total_mensuel:,.0f} € vs Retraite : {retraite_estimee:,.0f} €")
+        
+    with col_ret2:
+        capital_necessaire = manque_a_gagner * 12 / 0.04 # Pour générer ce revenu à 4%
+        st.write("🔎 **Solution :**")
+        st.write(f"Pour maintenir votre niveau de vie, vous devez constituer un capital de **{capital_necessaire:,.0f} €** d'ici vos {age_ret} ans.")
+
+    st.markdown("---")
+    st.subheader("📝 Note de synthèse de l'expert")
+    conseils_final = st.text_area("Préconisations stratégiques (LMNP, Assurance-Vie, PER...)", key="expert_precos")
+    
+    if st.button("🚀 VALIDER L'ANALYSE FINALE"):
+        st.balloons()
+        st.success("Analyse enregistrée pour le dossier client.")
+
+# --- SECTION ENVOI FINAL (BOUTON CLIENT - TOUJOURS À LA FIN) ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
-    # Préparation des données pour l'email (invisible à l'écran)
     base_url = "https://analyse-ocp.streamlit.app/?"
     params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
     corps_mail = f"DOSSIER : {prenom_client} {nom_client} \nLIEN : {base_url + params} \nREMARQUES : {remarques_client}"
 
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
-            <input type="hidden" name="_subject" value="ETUDE OCP : {nom_client}">
+            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE OCP : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER_COMPLET" value="{corps_mail}">
+            <input type="hidden" name="DOSSIER" value="{corps_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
