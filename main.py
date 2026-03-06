@@ -272,34 +272,38 @@ if st.session_state.get('is_expert', False):
         st.write(f"Total Dettes : {total_passif:,.0f} €")
 
 # --- SECTION ENVOI FINAL ---
-# --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     
-    # Préparation technique invisible
-    mon_email = "bmainberger@ocp-patrimoine.com" 
-    recap_technique = f"CLIENT: {nom_client} {prenom_client} | TEL: {st.session_state.get('tel_p', '-')} | IMMO: {total_brut_immo} | FIN: {total_brut_fin} | DETTES: {total_passif} | OBJ: {st.session_state.get('obj_multi', [])}"
+    # 1. Construction du LIEN MAGIQUE (pour remplir le formulaire tout seul)
+    # On encode les données du client dans l'adresse du site
+    base_url = "https://analyse-ocp.streamlit.app/?"
+    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={tmi_c}"
+    lien_analyse = base_url + params
 
-    # Construction du bouton (L'unique élément visible)
+    # 2. Préparation du mail pour vous
+    mon_email = "bmainberger@ocp-patrimoine.com"
+    corps_mail = f"""
+    DOSSIER CLIENT : {prenom_client} {nom_client}
+    -------------------------------------------
+    REVENUS : {rev_annuel} € | TMI : {tmi_c}
+    PATRIMOINE : Immo {total_brut_immo} € | Fin {total_brut_fin} €
+    DETTES : {total_passif} €
+    
+    🔗 CLIQUER ICI POUR OUVRIR L'ANALYSE (SANS RESSAISIE) :
+    {lien_analyse}
+    """
+
+    # 3. Le Bouton pour le client
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="Nouveau Bilan OCP : {nom_client}">
+            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER" value="{recap_technique}">
-            <button type="submit" style="
-                background-color: #1d2e4d; 
-                color: white; 
-                padding: 20px; 
-                font-size: 18px; 
-                border-radius: 8px; 
-                width: 100%; 
-                border: none; 
-                cursor: pointer; 
-                font-weight: bold;">
+            <input type="hidden" name="DOSSIER_ET_LIEN_AUTO" value="{corps_mail}">
+            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
     
     st.markdown(bouton_html, unsafe_allow_html=True)
-
