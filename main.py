@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 from fpdf import FPDF
 
-# --- FONCTION PDF (Ajoutée sans toucher au reste) ---
+# --- FONCTION PDF ---
 def generate_pdf(nom, prenom, p_net, r_mens, endettement, gap, notes):
     pdf = FPDF()
     pdf.add_page()
@@ -27,18 +27,22 @@ def generate_pdf(nom, prenom, p_net, r_mens, endettement, gap, notes):
 # 1. CONFIGURATION
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# 2. INITIALISATION (Pour que les graphes s'affichent même à 0)
+# 2. INITIALISATION
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
 
 # 3. ACCÈS EXPERT
-if 'is_expert' not in st.session_state: st.session_state['is_expert'] = False
+if 'is_expert' not in st.session_state: 
+    st.session_state['is_expert'] = False
+
 with st.sidebar:
     st.title("🔐 Espace Expert")
     code_admin = st.text_input("Code confidentiel", type="password")
-    if code_admin == "ADMINOCP": st.session_state['is_expert'] = True
-    else: st.session_state['is_expert'] = False
+    if code_admin == "ADMINOCP": 
+        st.session_state['is_expert'] = True
+    else: 
+        st.session_state['is_expert'] = False
 
 st.title("Votre stratégie patrimoniale commence ici.")
 st.markdown("---")
@@ -60,19 +64,10 @@ cp1, cp2 = st.columns(2)
 rev_annuel = cp1.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
 rev_foncier = cp2.number_input("Autres revenus mensuels (€)", min_value=0.0, key="rev_f")
 
-# --- MODULES 4 À 6 : PATRIMOINE (AVEC EXPANDERS COMME AVANT) ---
+# --- MODULES 4 À 6 : PATRIMOINE (AVEC EXPANDERS) ---
 st.header("4, 5 & 6. Patrimoine Immobilier & Financier")
 tab1, tab2 = st.tabs(["🏠 Immobilier", "🏢 Placements Financiers"])
 
 with tab1:
     nb_biens = st.number_input("Nombre de biens physiques", min_value=0, key="nb_p_p")
-    for i in range(int(nb_biens)):
-        with st.expander(f"Bien n°{i+1}", expanded=True):
-            val_i = st.number_input(f"Valeur vénale (€) - Bien {i+1}", min_value=0.0, key=f"val_i_{i}")
-            total_brut_immo += val_i
-
-with tab2:
-    nb_fin = st.number_input("Nombre de contrats financiers", min_value=0, key="nb_f_f")
-    for j in range(int(nb_fin)):
-        with st.expander(f"Contrat n°{j+1}", expanded=True):
-            m_f = st.number_input(f"Solde (€) - Contrat {j+1}", min_value=0.0, key
+    for i in range
