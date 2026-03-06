@@ -1,6 +1,31 @@
 import streamlit as st
 from datetime import date
 import pandas as pd
+from fpdf import FPDF # Ajout de la bibliothèque pour le PDF
+
+# --- FONCTION DE GÉNÉRATION DU PDF (AJOUT) ---
+def generate_pdf(nom, prenom, p_net, endettement, gap, notes):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 16)
+    pdf.set_text_color(29, 46, 77)
+    pdf.cell(0, 10, 'BILAN PATRIMONIAL STRATEGIQUE - OCP', 0, 1, 'C')
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, f"Client : {prenom} {nom}", 0, 1)
+    pdf.cell(0, 10, f"Date : {date.today().strftime('%d/%m/%Y')}", 0, 1)
+    pdf.ln(5)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(90, 10, 'Indicateur', 1, 0, 'C'); pdf.cell(90, 10, 'Valeur', 1, 1, 'C')
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(90, 10, 'Patrimoine Net', 1, 0); pdf.cell(90, 10, f"{p_net:,.0f} EUR", 1, 1)
+    pdf.cell(90, 10, 'Taux Endettement', 1, 0); pdf.cell(90, 10, f"{endettement:.1f} %", 1, 1)
+    pdf.cell(90, 10, 'Manque a gagner retraite', 1, 0); pdf.cell(90, 10, f"{gap:,.0f} EUR/mois", 1, 1)
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 12); pdf.cell(0, 10, 'Note de synthese de l\'expert :', 0, 1)
+    pdf.set_font('Arial', '', 11); pdf.multi_cell(0, 10, notes if notes else "Aucune note specifiee.")
+    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # 1. CONFIGURATION & STYLE
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
@@ -219,9 +244,8 @@ if st.session_state.get('is_expert', False):
         col_diag1, col_diag2 = st.columns(2)
         with col_diag1:
             st.write("**Forces & Points d'attention**")
-            # Logic de diagnostic automatique
             if p_net > 300000: st.success("✅ Patrimoine net significatif")
-            if total_brut_fin < (r_mensuel_expert * 6): st.error("❌ Épargne de précaution insuffisante (<6 mois)")
+            if total_brut_fin < (r_mensuel_expert * 6): st.error("❌Épargne de précaution insuffisante (<6 mois)")
             if (total_passif/p_brut if p_brut > 0 else 0) > 0.40: st.warning("⚠️ Endettement supérieur à 40% du brut")
             if r_mensuel_expert > 5000: st.success("✅ Capacité de rebond élevée")
             
@@ -246,28 +270,11 @@ if st.session_state.get('is_expert', False):
 
     with tab_d:
         retraite_est = r_mensuel_expert * 0.55
-        gap = r_mensuel_expert - retraite_est
-        st.write(f"Manque à gagner mensuel estimé : **{gap:,.0f} €**")
-        cap_a_faire = gap * 12 / 0.04 if gap > 0 else 0
+        gap_ret = r_mensuel_expert - retraite_est
+        st.write(f"Manque à gagner mensuel estimé : **{gap_ret:,.0f} €**")
+        cap_a_faire = gap_ret * 12 / 0.04 if gap_ret > 0 else 0
         st.warning(f"Capital à constituer pour compenser : {cap_a_faire:,.0f} €")
 
-    st.text_area("Note de synthèse expert :", key="final_expert_notes")
-    if st.button("✅ VALIDER L'ANALYSE"):
-        st.balloons()
-
-# --- BOUTON ENVOI CLIENT ---
-if not st.session_state.get('is_expert', False):
-    st.markdown("---")
-    nom_cli = nom_client if nom_client else "Client"
-    corps_mail = f"Dossier de {nom_cli}. Revenus: {rev_annuel}. Patrimoine: {total_brut_immo + total_brut_fin}."
+    final_expert_notes = st.text_area("Note de synthèse expert :", key="final_expert_notes")
     
-    bouton_html = f"""
-        <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
-            <input type="hidden" name="DOSSIER" value="{corps_mail}">
-            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
-                🚀 TRANSMETTRE MON ÉTUDE
-            </button>
-        </form>
-    """
-    st.markdown(bouton_html, unsafe_allow_html=True)
-
+    # --- BOUTON GÉNÉRATION PDF (AJOUT DANS LA ZONE EXPERT) ---
