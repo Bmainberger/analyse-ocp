@@ -1,10 +1,10 @@
 import streamlit as st
 from datetime import date
+from fpdf import FPDF # Nécessaire pour le bouton PDF
 
 # 1. CONFIGURATION ET STYLE DU BOUTON
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
-# Ce bloc crée le bouton bleu marine personnalisé
 st.markdown("""
     <style>
     div.stButton > button:first-child {
@@ -53,7 +53,7 @@ with col_b3:
     st.info("🛡️ **Sérénité**\n\nDiagnostic par un expert.")
 
 st.markdown("---")
-    
+
 # --- SECTION 1 : ÉTAT CIVIL & FAMILLE ---
 st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
@@ -114,7 +114,7 @@ with cp2:
     rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
     tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
-    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
+    age_retraite = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 # --- SECTION 3 BIS : BUDGET ---
 st.subheader("📊 3. bis Budget & Capacité d'Épargne")
@@ -247,6 +247,18 @@ with tab_p2:
             solde_dette = st.number_input(f"Reste à payer (€) {j}", min_value=0.0, key=f"solde_c_{j}")
             total_passif += solde_dette
 
+# --- MODULE 10 : COMMENTAIRES ET SYNTHÈSE ---
+st.markdown("---")
+st.header("📝 10. Commentaires & Préconisations")
+col_com1, col_com2 = st.columns(2)
+with col_com1:
+    commentaires_client = st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
+with col_com2:
+    if st.session_state.get('is_expert', False):
+        synthese_expert = st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
+    else:
+        st.info("Espace réservé à l'analyse de votre conseiller OCP.")
+
 # --- SECTION 11 : OBJECTIFS ---
 st.markdown("---")
 st.header("🎯 11. Objectifs & Priorités")
@@ -257,53 +269,80 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- SECTION 12 : RÉSUMÉ EXPERT ---
+# --- SECTION 12 : ESPACE EXPERT ET 4 PILIERS ---
 if st.session_state.get('is_expert', False):
     st.sidebar.markdown("---")
-    st.sidebar.title("📊 Synthèse Expert")
+    st.sidebar.title("📊 Les 4 Piliers OCP")
+    
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
-    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
     
-    if st.button("🚀 GÉNÉRER LE RÉSUMÉ DU BILAN"):
-        st.balloons()
-        st.header("📋 Diagnostic Patrimonial OCP")
-        st.write(f"Patrimoine Brut : {pat_brut:,.0f} €")
-        st.write(f"Total Dettes : {total_passif:,.0f} €")
+    # PILIER 1 : LIQUIDITÉ
+    epargne_securite = total_brut_fin
+    besoin_securite = rev_annuel / 2 # 6 mois
+    if epargne_securite < besoin_securite:
+        st.sidebar.error(f"🚨 Liquidité : Insuffisante (Manque {(besoin_securite - epargne_securite):,.0f} €)")
+    else:
+        st.sidebar.success("✅ Liquidité : Épargne de précaution OK")
+        
+    # PILIER 2 : ENDETTEMENT
+    ratio_dette = (total_passif / pat_brut * 100) if pat_brut > 0 else 0
+    if ratio_dette > 40:
+        st.sidebar.warning(f"⚠️ Endettement : {ratio_dette:.1f}% (Levier élevé)")
+    else:
+        st.sidebar.success(f"✅ Endettement : {ratio_dette:.1f}% (Sain)")
+
+    # PILIER 3 : RETRAITE
+    gap_mensuel = (rev_annuel / 12) * 0.45
+    st.sidebar.info(f"📉 Gap Retraite estimé : -{gap_mensuel:,.0f} € /mois")
+
+    # PILIER 4 : FISCALITÉ
+    if tmi_c in ["30%", "41%", "45%"]:
+        st.sidebar.warning(f"📉 TMI à {tmi_c} : Fort levier d'optimisation")
+        
+    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+
+    # --- BOUTON PDF ---
+    if st.button("📄 GÉNÉRER LE BILAN PDF PROFESSIONNEL"):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(200, 10, f"Bilan Patrimonial - {prenom_client} {nom_client}", ln=True, align='C')
+        pdf.set_font("Arial", '', 12)
+        pdf.ln(10)
+        pdf.cell(200, 10, f"Patrimoine Brut : {pat_brut:,.0f} EUR", ln=True)
+        pdf.cell(200, 10, f"Dettes totales : {total_passif:,.0f} EUR", ln=True)
+        pdf.cell(200, 10, f"Patrimoine Net : {pat_net:,.0f} EUR", ln=True)
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(200, 10, "Synthese de l'Expert :", ln=True)
+        pdf.set_font("Arial", '', 11)
+        pdf.multi_cell(0, 10, st.session_state.get('syn_expert', 'Aucune note de synthese redigee.'))
+        
+        pdf_output = pdf.output(dest='S').encode('latin-1')
+        st.download_button(label="📥 Télécharger le Bilan (PDF)", data=pdf_output, file_name=f"Bilan_{nom_client}.pdf", mime="application/pdf")
 
 # --- SECTION ENVOI FINAL ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
+    mon_email = "bmainberger@ocp-patrimoine.com"
     
-    # 1. Construction du LIEN MAGIQUE (pour remplir le formulaire tout seul)
-    # On encode les données du client dans l'adresse du site
+    # Construction du lien magique
     base_url = "https://analyse-ocp.streamlit.app/?"
     params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={tmi_c}"
     lien_analyse = base_url + params
 
-    # 2. Préparation du mail pour vous
-    mon_email = "bmainberger@ocp-patrimoine.com"
-    corps_mail = f"""
-    DOSSIER CLIENT : {prenom_client} {nom_client}
-    -------------------------------------------
-    REVENUS : {rev_annuel} € | TMI : {tmi_c}
-    PATRIMOINE : Immo {total_brut_immo} € | Fin {total_brut_fin} €
-    DETTES : {total_passif} €
-    
-    🔗 CLIQUER ICI POUR OUVRIR L'ANALYSE (SANS RESSAISIE) :
-    {lien_analyse}
-    """
+    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client}\nREVENUS : {rev_annuel} | PATRIMOINE : {total_brut_immo+total_brut_fin}\nLIEN : {lien_analyse}"
 
-    # 3. Le Bouton pour le client
+    # Bouton HTML Propre
     bouton_html = f"""
         <form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
             <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER_ET_LIEN_AUTO" value="{corps_mail}">
+            <input type="hidden" name="DOSSIER" value="{corps_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
-            </button>
+           </button>
         </form>
     """
-    
     st.markdown(bouton_html, unsafe_allow_html=True)
