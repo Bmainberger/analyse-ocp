@@ -119,6 +119,7 @@ with b_col1:
 with b_col2:
     impots_mens = st.number_input("Impôts mensuels (€)", min_value=0.0, key="budget_impot")
     rev_mensuel_estim = (rev_annuel + rev_foncier) / 12
+    reste_vivre_brut = rev_mensuel_estim - (vie_courante + loyer_mens + impots_mens)
     st.info(f"Revenus mensuels estimés : {rev_mensuel_estim:,.0f} €")
 
 st.markdown("---")
@@ -173,7 +174,7 @@ with col_s2:
 st.markdown("---")
 
 # --- SECTION 9 : PASSIF ---
-st.header("9.Passif & Endettement")
+st.header("9. Passif & Endettement")
 nb_pret_immo = st.number_input("Nombre de crédits immobiliers", min_value=0, key="nb_p_immo")
 for i in range(int(nb_pret_immo)):
     with st.expander(f"Crédit Immo n°{i+1}"):
@@ -200,8 +201,9 @@ with col_obj2:
 # --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
 if st.session_state.get('is_expert', False):
     st.markdown("---")
-    st.header("📊 ANALSE STRATÉGIQUE BIG EXPERT")
+    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
     
+    # CALCULS SÉCURISÉS (FILET ANTI-ROUGE)
     p_brut = float(total_brut_immo + total_brut_fin)
     p_net = float(p_brut - total_passif)
     r_annuel_expert = float(rev_annuel) if rev_annuel else 0.0
@@ -212,23 +214,14 @@ if st.session_state.get('is_expert', False):
     c2.metric("Revenu Mensuel", f"{r_mensuel_expert:,.0f} €".replace(",", " "))
     c3.metric("Endettement", f"{(total_passif/p_brut*100) if p_brut > 0 else 0:.1f} %")
 
-    st.markdown("### 🎯 Diagnostics Harvest")
-    tab_a, tab_b, tab_c, tab_d = st.tabs(["🛡️ Structure & Risques", "💸 Fiscalité", "☂️ Prévoyance", "👴 Retraite"])
+    st.markdown("### 🎯 Diagnostics")
+    tab_a, tab_b, tab_c, tab_d = st.tabs(["Structure", "Fiscalité", "Prévoyance", "Retraite"])
     
     with tab_a:
-        col_diag1, col_diag2 = st.columns(2)
-        with col_diag1:
-            st.write("**Forces & Points d'attention**")
-            # Logic de diagnostic automatique
-            if p_net > 300000: st.success("✅ Patrimoine net significatif")
-            if total_brut_fin < (r_mensuel_expert * 6): st.error("❌ Épargne de précaution insuffisante (<6 mois)")
-            if (total_passif/p_brut if p_brut > 0 else 0) > 0.40: st.warning("⚠️ Endettement supérieur à 40% du brut")
-            if r_mensuel_expert > 5000: st.success("✅ Capacité de rebond élevée")
-            
-        with col_diag2:
-            st.write("**Répartition des Actifs**")
-            df_st = pd.DataFrame({"Pilier": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
-            st.bar_chart(df_st.set_index("Pilier"))
+        st.write("**Répartition des Actifs**")
+        df_st = pd.DataFrame({"Pilier": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
+        st.bar_chart(df_st.set_index("Pilier"))
+        
 
     with tab_b:
         try:
@@ -243,6 +236,7 @@ if st.session_state.get('is_expert', False):
         besoin = r_annuel_expert * 3
         st.write(f"Besoin de protection familiale : **{besoin:,.0f} €**")
         st.caption("Protection suggérée pour maintenir le train de vie (3 ans).")
+        
 
     with tab_d:
         retraite_est = r_mensuel_expert * 0.55
