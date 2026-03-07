@@ -5,6 +5,7 @@ import pandas as pd
 # 1. CONFIGURATION & STYLE
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
 
+# Style personnalisé pour le bouton bleu marine
 st.markdown("""
     <style>
     div.stButton > button:first-child {
@@ -25,6 +26,9 @@ total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
 mensualites_totales = 0.0
+rev_annuel = 0.0
+rev_foncier = 0.0
+reste_vivre_brut = 0.0
 
 # 3. GESTION ACCÈS EXPERT
 if 'is_expert' not in st.session_state:
@@ -109,7 +113,7 @@ with cp2:
     rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
     tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
-    age_ret = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
+    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 st.subheader("📊 3. bis Budget & Capacité d'Épargne")
 b_col1, b_col2 = st.columns(2)
@@ -183,7 +187,7 @@ for i in range(int(nb_pret_immo)):
         m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
         mensualites_totales += m_mens
 
-# --- SECTION 10 : REMARQUES ---
+# --- SECTION 10 : REMARQUES (RÉTABLIE) ---
 st.markdown("---")
 st.header("📝 10. Vos Remarques & Questions")
 remarques_client = st.text_area("Avez-vous des précisions à nous apporter ?", key="rem_cli")
@@ -198,70 +202,49 @@ with col_obj2:
     horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
     profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
+# --- SECTION 12 : RÉSUMÉ EXPERT (LE CERVEAU HARVEST) ---
 if st.session_state.get('is_expert', False):
     st.markdown("---")
     st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
     
-    # CALCULS SÉCURISÉS (FILET ANTI-ROUGE)
-    p_brut = float(total_brut_immo + total_brut_fin)
-    p_net = float(p_brut - total_passif)
-    r_annuel_expert = float(rev_annuel) if rev_annuel else 0.0
-    r_mensuel_expert = (r_annuel_expert + float(rev_foncier)) / 12 if (r_annuel_expert + float(rev_foncier)) > 0 else 0.0
+    pat_brut = total_brut_immo + total_brut_fin
+    pat_net = pat_brut - total_passif
     
+    # 1. CHIFFRES CLÉS
     c1, c2, c3 = st.columns(3)
-    c1.metric("Patrimoine Net", f"{p_net:,.0f} €".replace(",", " "))
-    c2.metric("Revenu Mensuel", f"{r_mensuel_expert:,.0f} €".replace(",", " "))
-    c3.metric("Endettement", f"{(total_passif/p_brut*100) if p_brut > 0 else 0:.1f} %")
+    c1.metric("Patrimoine Net", f"{pat_net:,.0f} €")
+    c2.metric("Endettement", f"{(total_passif/pat_brut*100) if pat_brut > 0 else 0:.1f} %")
+    pension_estim = (rev_annuel / 12) * 0.55
+    c3.metric("Est. Retraite", f"{pension_estim:,.0f} € / mois")
 
-    st.markdown("### 🎯 Diagnostics")
-    tab_a, tab_b, tab_c, tab_d = st.tabs(["Structure", "Fiscalité", "Prévoyance", "Retraite"])
-    
-    with tab_a:
-        st.write("**Répartition des Actifs**")
-        df_st = pd.DataFrame({"Pilier": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
-        st.bar_chart(df_st.set_index("Pilier"))
+    # 2. GRAPHIQUE
+    if pat_brut > 0:
+        df_chart = pd.DataFrame({"Actifs": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
+        st.bar_chart(df_chart.set_index("Actifs"))
         
 
-    with tab_b:
-        try:
-            tmi_val = int(tmi_c.replace('%','')) if tmi_c else 30
-        except:
-            tmi_val = 30
-        impot_est = r_annuel_expert * (tmi_val / 100) * 0.7
-        st.write(f"Impôt annuel estimé : **{impot_est:,.0f} €**")
-        st.info(f"Levier fiscal potentiel : {impot_est * 0.5:,.0f} € / an")
-
-    with tab_c:
-        besoin = r_annuel_expert * 3
-        st.write(f"Besoin de protection familiale : **{besoin:,.0f} €**")
-        st.caption("Protection suggérée pour maintenir le train de vie (3 ans).")
-        
-
-    with tab_d:
-        retraite_est = r_mensuel_expert * 0.55
-        gap = r_mensuel_expert - retraite_est
-        st.write(f"Manque à gagner mensuel estimé : **{gap:,.0f} €**")
-        cap_a_faire = gap * 12 / 0.04 if gap > 0 else 0
-        st.warning(f"Capital à constituer pour compenser : {cap_a_faire:,.0f} €")
-
-    st.text_area("Note de synthèse expert :", key="final_expert_notes")
-    if st.button("✅ VALIDER L'ANALYSE"):
+    # 3. PRÉCONISATIONS
+    st.subheader("💡 Préconisations de l'Expert")
+    st.text_area("Observations stratégiques :", key="expert_obs")
+    if st.button("🚀 VALIDER L'ANALYSE"):
         st.balloons()
 
-# --- BOUTON ENVOI CLIENT ---
+# --- BOUTON DE FIN (VERSION PROPRE) ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
-    nom_cli = nom_client if nom_client else "Client"
-    corps_mail = f"Dossier de {nom_cli}. Revenus: {rev_annuel}. Patrimoine: {total_brut_immo + total_brut_fin}."
-    
+    # Préparation des données pour l'email (invisible à l'écran)
+    base_url = "https://analyse-ocp.streamlit.app/?"
+    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}"
+    corps_mail = f"DOSSIER : {prenom_client} {nom_client} \nLIEN : {base_url + params} \nREMARQUES : {remarques_client}"
+
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
-            <input type="hidden" name="DOSSIER" value="{corps_mail}">
+            <input type="hidden" name="_subject" value="ETUDE OCP : {nom_client}">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="DOSSIER_COMPLET" value="{corps_mail}">
             <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
                 🚀 TRANSMETTRE MON ÉTUDE
             </button>
         </form>
     """
     st.markdown(bouton_html, unsafe_allow_html=True)
-
