@@ -1,6 +1,37 @@
 import streamlit as st
 from datetime import date
 import pandas as pd
+from fpdf import FPDF
+
+# --- FONCTION GÉNÉRATION PDF ---
+def generate_pdf(nom, prenom, p_net, r_mens, endettement, gap, notes):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 16)
+    pdf.set_text_color(29, 46, 77)
+    pdf.cell(0, 10, 'BILAN PATRIMONIAL STRATEGIQUE - OCP', 0, 1, 'C')
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, f"Client : {prenom} {nom}", 0, 1)
+    pdf.cell(0, 10, f"Date : {date.today().strftime('%d/%m/%Y')}", 0, 1)
+    pdf.ln(5)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(60, 10, 'Indicateur', 1, 0, 'C')
+    pdf.cell(60, 10, 'Valeur', 1, 1, 'C')
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(60, 10, 'Patrimoine Net', 1, 0)
+    pdf.cell(60, 10, f"{p_net:,.0f} EUR", 1, 1)
+    pdf.cell(60, 10, 'Revenu Mensuel', 1, 0)
+    pdf.cell(60, 10, f"{r_mens:,.0f} EUR", 1, 1)
+    pdf.cell(60, 10, 'Taux Endettement', 1, 0)
+    pdf.cell(60, 10, f"{endettement:.1f} %", 1, 1)
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 10, 'Synthese de l\'Expert :', 0, 1)
+    pdf.set_font('Arial', '', 11)
+    pdf.multi_cell(0, 10, notes if notes else "Analyse en cours.")
+    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # 1. CONFIGURATION & STYLE
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
@@ -20,7 +51,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. INITIALISATION DES COMPTEURS
+# 2. INITIALISATION
 total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
@@ -130,15 +161,15 @@ with tab1:
     nb_biens = st.number_input("Nombre de biens immobiliers physiques", min_value=0, key="nb_p_p")
     for i in range(int(nb_biens)):
         with st.expander(f"Bien n°{i+1}", expanded=True):
-            val_i = st.number_input(f"Valeur vénale (€) {i}", min_value=0.0, key=f"val_i_{i}")
+            val_i = st.number_input(f"Valeur vénale (€) {i+1}", min_value=0.0, key=f"val_i_{i}")
             total_brut_immo += val_i
 
 with tab2:
     nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, key="nb_p_c")
     for j in range(int(nb_coll)):
         with st.expander(f"Placement Collectif n°{j+1}", expanded=True):
-            px_p = st.number_input(f"Prix de part (€) {j}", min_value=0.0, key=f"px_c_{j}")
-            nb_p = st.number_input(f"Nombre de parts {j}", min_value=0.0, key=f"nb_c_{j}")
+            px_p = st.number_input(f"Prix de part (€) {j+1}", min_value=0.0, key=f"px_c_{j}")
+            nb_p = st.number_input(f"Nombre de parts {j+1}", min_value=0.0, key=f"nb_c_{j}")
             total_brut_immo += (px_p * nb_p)
 
 st.markdown("---")
@@ -148,7 +179,7 @@ st.header("6. Patrimoine Financier")
 nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, key="nb_f_f")
 for k in range(int(nb_fin)):
     with st.expander(f"Contrat n°{k+1}"):
-        m_f = st.number_input(f"Solde (€) {k}", min_value=0.0, key=f"m_f_{k}")
+        m_f = st.number_input(f"Solde (€) {k+1}", min_value=0.0, key=f"m_f_{k}")
         total_brut_fin += m_f
 
 st.markdown("---")
@@ -158,7 +189,7 @@ st.header("7. Prévoyance & Protection")
 nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0, key="nb_p_v")
 for p in range(int(nb_prev_input)):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
-        st.number_input(f"Montant Garanti (€) {p}", key=f"p_m_{p}")
+        st.number_input(f"Montant Garanti (€) {p+1}", key=f"p_m_{p}")
 
 st.markdown("---")
 
@@ -177,9 +208,9 @@ st.header("9.Passif & Endettement")
 nb_pret_immo = st.number_input("Nombre de crédits immobiliers", min_value=0, key="nb_p_immo")
 for i in range(int(nb_pret_immo)):
     with st.expander(f"Crédit Immo n°{i+1}"):
-        crdu = st.number_input(f"Restant Dû (€) {i}", min_value=0.0, key=f"crdu_p_{i}")
+        crdu = st.number_input(f"Restant Dû (€) {i+1}", min_value=0.0, key=f"crdu_p_{i}")
         total_passif += crdu
-        m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
+        m_mens = st.number_input(f"Mensualité (€) {i+1}", min_value=0.0, key=f"mens_p_{i}")
         mensualites_totales += m_mens
 
 # --- SECTION 10 : REMARQUES ---
@@ -200,7 +231,7 @@ with col_obj2:
 # --- SECTION 12 : RÉSUMÉ RÉSERVÉ À L'EXPERT ---
 if st.session_state.get('is_expert', False):
     st.markdown("---")
-    st.header("📊 ANALSE STRATÉGIQUE BIG EXPERT")
+    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
     
     p_brut = float(total_brut_immo + total_brut_fin)
     p_net = float(p_brut - total_passif)
@@ -208,59 +239,32 @@ if st.session_state.get('is_expert', False):
     r_mensuel_expert = (r_annuel_expert + float(rev_foncier)) / 12 if (r_annuel_expert + float(rev_foncier)) > 0 else 0.0
     
     c1, c2, c3 = st.columns(3)
-    c1.metric("Patrimoine Net", f"{p_net:,.0f} €".replace(",", " "))
-    c2.metric("Revenu Mensuel", f"{r_mensuel_expert:,.0f} €".replace(",", " "))
+    c1.metric("Patrimoine Net", f"{p_net:,.0f} €")
+    c2.metric("Revenu Mensuel", f"{r_mensuel_expert:,.0f} €")
     c3.metric("Endettement", f"{(total_passif/p_brut*100) if p_brut > 0 else 0:.1f} %")
 
-    st.markdown("### 🎯 Diagnostics Harvest")
+    st.markdown("### 🎯 Diagnostics")
     tab_a, tab_b, tab_c, tab_d = st.tabs(["🛡️ Structure & Risques", "💸 Fiscalité", "☂️ Prévoyance", "👴 Retraite"])
     
-    with tab_a:
-        col_diag1, col_diag2 = st.columns(2)
-        with col_diag1:
-            st.write("**Forces & Points d'attention**")
-            # Logic de diagnostic automatique
-            if p_net > 300000: st.success("✅ Patrimoine net significatif")
-            if total_brut_fin < (r_mensuel_expert * 6): st.error("❌ Épargne de précaution insuffisante (<6 mois)")
-            if (total_passif/p_brut if p_brut > 0 else 0) > 0.40: st.warning("⚠️ Endettement supérieur à 40% du brut")
-            if r_mensuel_expert > 5000: st.success("✅ Capacité de rebond élevée")
-            
-        with col_diag2:
-            st.write("**Répartition des Actifs**")
-            df_st = pd.DataFrame({"Pilier": ["Immo", "Financier"], "Valeur": [total_brut_immo, total_brut_fin]})
-            st.bar_chart(df_st.set_index("Pilier"))
-
-    with tab_b:
-        try:
-            tmi_val = int(tmi_c.replace('%','')) if tmi_c else 30
-        except:
-            tmi_val = 30
-        impot_est = r_annuel_expert * (tmi_val / 100) * 0.7
-        st.write(f"Impôt annuel estimé : **{impot_est:,.0f} €**")
-        st.info(f"Levier fiscal potentiel : {impot_est * 0.5:,.0f} € / an")
-
-    with tab_c:
-        besoin = r_annuel_expert * 3
-        st.write(f"Besoin de protection familiale : **{besoin:,.0f} €**")
-        st.caption("Protection suggérée pour maintenir le train de vie (3 ans).")
-
     with tab_d:
         retraite_est = r_mensuel_expert * 0.55
-        gap = r_mensuel_expert - retraite_est
-        st.write(f"Manque à gagner mensuel estimé : **{gap:,.0f} €**")
-        cap_a_faire = gap * 12 / 0.04 if gap > 0 else 0
-        st.warning(f"Capital à constituer pour compenser : {cap_a_faire:,.0f} €")
+        gap_val = r_mensuel_expert - retraite_est
+        st.write(f"Manque à gagner mensuel estimé : **{gap_val:,.0f} €**")
 
-    st.text_area("Note de synthèse expert :", key="final_expert_notes")
-    if st.button("✅ VALIDER L'ANALYSE"):
-        st.balloons()
+    # ZONE FINALE PDF
+    st.write("---")
+    final_notes = st.text_area("Note de synthèse expert :", key="final_expert_notes")
+    
+    if st.button("🔨 GÉNÉRER LE BILAN PDF"):
+        tx_endett = (total_passif/p_brut*100) if p_brut > 0 else 0
+        pdf_bytes = generate_pdf(nom_client, prenom_client, p_net, r_mensuel_expert, tx_endett, gap_val, final_notes)
+        st.download_button("📥 Télécharger le PDF", data=pdf_bytes, file_name=f"Bilan_{nom_client}.pdf", mime="application/pdf")
 
 # --- BOUTON ENVOI CLIENT ---
 if not st.session_state.get('is_expert', False):
     st.markdown("---")
     nom_cli = nom_client if nom_client else "Client"
-    corps_mail = f"Dossier de {nom_cli}. Revenus: {rev_annuel}. Patrimoine: {total_brut_immo + total_brut_fin}."
-    
+    corps_mail = f"Dossier de {nom_cli}."
     bouton_html = f"""
         <form action="https://formsubmit.co/bmainberger@ocp-patrimoine.com" method="POST">
             <input type="hidden" name="DOSSIER" value="{corps_mail}">
