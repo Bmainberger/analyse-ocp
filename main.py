@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import date
-from fpdf import FPDF # Nécessaire pour le bouton PDF
+from fpdf import FPDF
 
 # 1. CONFIGURATION ET STYLE DU BOUTON
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
@@ -43,7 +43,6 @@ with st.sidebar:
 
 # 4. LANDING PAGE
 st.title("Votre stratégie patrimoniale commence ici.")
-
 col_b1, col_b2, col_b3 = st.columns(3)
 with col_b1:
     st.info("🔭 **Vision 360°**\n\nRegroupez tout votre patrimoine.")
@@ -64,7 +63,6 @@ with col1:
     date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
     lieu_naissance = st.text_input("Lieu de naissance", key="lieu_c")
     nationalite = st.text_input("Nationalité", key="nat_c") 
-
 with col2:
     st.subheader("Situation")
     situation = st.selectbox("Situation Matrimoniale", ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf/Veuve"], key="sit_mat")
@@ -75,12 +73,10 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
     st.subheader("Informations du Conjoint")
     c_col1, c_col2 = st.columns(2)
     with c_col1:
-        nom_conj = st.text_input("Nom du Conjoint", key="nom_conj")
-        dnaiss_conj = st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
-        st.text_input("Lieu de naissance conjoint", key="lieu_conj")
+        st.text_input("Nom du Conjoint", key="nom_conj")
+        st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
     with c_col2:
-        pre_conj = st.text_input("Prénom du Conjoint", key="pre_conj")
-        st.text_input("Nationalité Conjoint", key="nat_conj")
+        st.text_input("Prénom du Conjoint", key="pre_conj")
 
 if nb_enfants > 0:
     st.write("📅 **Détail des enfants :**")
@@ -94,12 +90,9 @@ st.markdown("---")
 # --- SECTION 2 : COORDONNÉES ---
 st.header("2. Coordonnées")
 c_coo1, c_coo2, c_coo3 = st.columns([2, 1, 1])
-with c_coo1:
-    st.text_input("Adresse postale complète", key="adr_p")
-with c_coo2:
-    st.text_input("Téléphone", key="tel_p")
-with c_coo3:
-    st.text_input("Email", key="mail_p")
+with c_coo1: st.text_input("Adresse postale complète", key="adr_p")
+with c_coo2: st.text_input("Téléphone", key="tel_p")
+with c_coo3: st.text_input("Email", key="mail_p")
 
 st.markdown("---")
 
@@ -116,7 +109,6 @@ with cp3:
     tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
     age_retraite = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
-# --- SECTION 3 BIS : BUDGET ---
 st.subheader("📊 3. bis Budget & Capacité d'Épargne")
 b_col1, b_col2 = st.columns(2)
 with b_col1:
@@ -125,16 +117,14 @@ with b_col1:
 with b_col2:
     impots_mens = st.number_input("Impôts mensuels (€)", min_value=0.0, key="budget_impot")
     rev_mensuel_estim = (rev_annuel + rev_foncier) / 12
-    reste_vivre_brut = rev_mensuel_estim - (vie_courante + loyer_mens + impots_mens)
     st.info(f"Revenus mensuels estimés : {rev_mensuel_estim:,.0f} €")
 
 st.markdown("---")
 
-# --- SECTION 4 & 5 : IMMOBILIER ---
+# --- SECTION 4 & 5 : IMMOBILIER (COMPLET) ---
 st.header("4 & 5. Patrimoine Immobilier")
-tab1, tab2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier"])
-
-with tab1:
+tab_i1, tab_i2 = st.tabs(["🏠 Immobilier Physique", "🏢 Pierre-Papier"])
+with tab_i1:
     nb_biens = st.number_input("Nombre de biens immobiliers physiques", min_value=0, key="nb_p_p")
     for i in range(int(nb_biens)):
         with st.expander(f"Bien n°{i+1}", expanded=True):
@@ -146,8 +136,7 @@ with tab1:
             with c2:
                 st.selectbox(f"Régime fiscal {i}", ["Droit Commun (Nu)", "LMNP", "LMP", "Pinel", "Malraux", "Monument Historique"], key=f"fisc_i_{i}")
                 st.radio(f"Crédit en cours ? {i}", ["Non", "Oui"], key=f"cred_i_{i}")
-
-with tab2:
+with tab_i2:
     nb_coll = st.number_input("Nombre de placements collectifs", min_value=0, key="nb_p_c")
     for j in range(int(nb_coll)):
         with st.expander(f"Placement Collectif n°{j+1}", expanded=True):
@@ -160,17 +149,14 @@ with tab2:
                 px_p = st.number_input(f"Prix de part (€) {j}", min_value=0.0, key=f"px_c_{j}")
                 nb_p = st.number_input(f"Nombre de parts {j}", min_value=0.0, key=f"nb_c_{j}")
                 val_liq = px_p * nb_p
-                st.write(f"Valeur estimée : {val_liq:,.0f} €")
                 total_brut_immo += val_liq
             with c3:
-                if t_coll == "SCPI":
-                    st.number_input(f"TOF (%) {j}", min_value=0.0, max_value=100.0, key=f"tof_c_{j}")
-                elif t_coll == "GFV / GFI":
-                    st.text_input(f"Surface / Exploitation {j}", key=f"surf_c_{j}")
+                if t_coll == "SCPI": st.number_input(f"TOF (%) {j}", min_value=0.0, max_value=100.0, key=f"tof_c_{j}")
+                elif t_coll == "GFV / GFI": st.text_input(f"Surface / Exploitation {j}", key=f"surf_c_{j}")
 
 st.markdown("---")
 
-# --- SECTION 6 : FINANCIER ---
+# --- SECTION 6 : FINANCIER (COMPLET) ---
 st.header("6. Patrimoine Financier")
 nb_fin = st.number_input("Nombre de comptes/contrats financiers", min_value=0, key="nb_f_f")
 for k in range(int(nb_fin)):
@@ -188,7 +174,7 @@ for k in range(int(nb_fin)):
 
 st.markdown("---")
 
-# --- SECTION 7 : PRÉVOYANCE ---
+# --- SECTION 7 : PRÉVOYANCE (COMPLET) ---
 st.header("7. Prévoyance & Protection")
 nb_prev_input = st.number_input("Nombre de contrats de prévoyance", min_value=0, key="nb_p_v")
 for p in range(int(nb_prev_input)):
@@ -198,14 +184,13 @@ for p in range(int(nb_prev_input)):
             type_p = st.selectbox(f"Type de garantie {p}", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
         with p2:
             st.number_input(f"Montant Garanti (€) {p}", key=f"p_m_{p}")
-            if type_p == "Emprunteur":
-                st.number_input(f"Quotité (%) {p}", min_value=0, max_value=100, value=100, key=f"p_q_{p}")
+            if type_p == "Emprunteur": st.number_input(f"Quotité (%) {p}", min_value=0, max_value=100, value=100, key=f"p_q_{p}")
         with p3:
             st.text_input(f"Bénéficiaires {p}", key=f"p_b_{p}")
 
 st.markdown("---")
 
-# --- SECTION 8 : SANTÉ ---
+# --- SECTION 8 : SANTÉ (COMPLET) ---
 st.header("8. Santé / Mutuelle")
 s1, s2, s3 = st.columns(3)
 with s1:
@@ -219,10 +204,9 @@ with s3:
 
 st.markdown("---")
 
-# --- SECTION 9 : PASSIF ---
+# --- SECTION 9 : PASSIF (COMPLET) ---
 st.header("9. Passif & Endettement")
 tab_p1, tab_p2 = st.tabs(["🏠 Crédits Immobiliers", "💳 Crédits Conso & Autres"])
-
 with tab_p1:
     nb_pret_immo = st.number_input("Nombre de crédits immobiliers", min_value=0, key="nb_p_immo")
     for i in range(int(nb_pret_immo)):
@@ -239,7 +223,6 @@ with tab_p1:
                 m_mens = st.number_input(f"Mensualité (€) {i}", min_value=0.0, key=f"mens_p_{i}")
                 mensualites_totales += m_mens
                 st.date_input(f"Date fin {i}", key=f"fin_p_{i}")
-
 with tab_p2:
     nb_pret_conso = st.number_input("Nombre d'autres crédits", min_value=0, key="nb_p_conso")
     for j in range(int(nb_pret_conso)):
@@ -247,103 +230,57 @@ with tab_p2:
             solde_dette = st.number_input(f"Reste à payer (€) {j}", min_value=0.0, key=f"solde_c_{j}")
             total_passif += solde_dette
 
-# --- MODULE 10 : COMMENTAIRES ET SYNTHÈSE ---
+# --- SECTION 10 & 11 : COMMENTAIRES ET OBJECTIFS ---
 st.markdown("---")
 st.header("📝 10. Commentaires & Préconisations")
 col_com1, col_com2 = st.columns(2)
 with col_com1:
-    commentaires_client = st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
+    st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
 with col_com2:
     if st.session_state.get('is_expert', False):
-        synthese_expert = st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
+        st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
     else:
         st.info("Espace réservé à l'analyse de votre conseiller OCP.")
 
-# --- SECTION 11 : OBJECTIFS ---
 st.markdown("---")
 st.header("🎯 11. Objectifs & Priorités")
 col_obj1, col_obj2 = st.columns(2)
 with col_obj1:
     st.multiselect("Quels sont les objectifs principaux ?", ["Retraite", "Fiscalité", "Famille", "Transmission", "Immobilier"], key="obj_multi")
 with col_obj2:
-    horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
-    profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
+    st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
+    st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
-# --- SECTION 12 : ESPACE EXPERT ET 4 PILIERS ---
+# --- ANALYSE STRATÉGIQUE BIG EXPERT (REMISE AU CENTRE COMME HIER) ---
 if st.session_state.get('is_expert', False):
-    st.sidebar.markdown("---")
-    st.sidebar.title("📊 Les 4 Piliers OCP")
+    st.markdown("---")
+    st.header("📊 ANALYSE STRATÉGIQUE BIG EXPERT")
     
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
     
-    # PILIER 1 : LIQUIDITÉ
-    epargne_securite = total_brut_fin
-    besoin_securite = rev_annuel / 2 # 6 mois
-    if epargne_securite < besoin_securite:
-        st.sidebar.error(f"🚨 Liquidité : Insuffisante (Manque {(besoin_securite - epargne_securite):,.0f} €)")
-    else:
-        st.sidebar.success("✅ Liquidité : Épargne de précaution OK")
-        
-    # PILIER 2 : ENDETTEMENT
+    col_res1, col_res2, col_res3 = st.columns(3)
+    col_res1.metric("Patrimoine Net", f"{pat_net:,.0f} €".replace(",", " "))
+    col_res2.metric("Revenu Mensuel", f"{(rev_annuel/12):,.0f} €")
     ratio_dette = (total_passif / pat_brut * 100) if pat_brut > 0 else 0
-    if ratio_dette > 40:
-        st.sidebar.warning(f"⚠️ Endettement : {ratio_dette:.1f}% (Levier élevé)")
-    else:
-        st.sidebar.success(f"✅ Endettement : {ratio_dette:.1f}% (Sain)")
+    col_res3.metric("Endettement", f"{ratio_dette:.1f} %")
 
-    # PILIER 3 : RETRAITE
-    gap_mensuel = (rev_annuel / 12) * 0.45
-    st.sidebar.info(f"📉 Gap Retraite estimé : -{gap_mensuel:,.0f} € /mois")
-
-    # PILIER 4 : FISCALITÉ
-    if tmi_c in ["30%", "41%", "45%"]:
-        st.sidebar.warning(f"📉 TMI à {tmi_c} : Fort levier d'optimisation")
-        
-    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
-
-    # --- BOUTON PDF ---
-    if st.button("📄 GÉNÉRER LE BILAN PDF PROFESSIONNEL"):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", 'B', 16)
-        pdf.cell(200, 10, f"Bilan Patrimonial - {prenom_client} {nom_client}", ln=True, align='C')
-        pdf.set_font("Arial", '', 12)
-        pdf.ln(10)
-        pdf.cell(200, 10, f"Patrimoine Brut : {pat_brut:,.0f} EUR", ln=True)
-        pdf.cell(200, 10, f"Dettes totales : {total_passif:,.0f} EUR", ln=True)
-        pdf.cell(200, 10, f"Patrimoine Net : {pat_net:,.0f} EUR", ln=True)
-        pdf.ln(5)
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(200, 10, "Synthese de l'Expert :", ln=True)
-        pdf.set_font("Arial", '', 11)
-        pdf.multi_cell(0, 10, st.session_state.get('syn_expert', 'Aucune note de synthese redigee.'))
-        
-        pdf_output = pdf.output(dest='S').encode('latin-1')
-        st.download_button(label="📥 Télécharger le Bilan (PDF)", data=pdf_output, file_name=f"Bilan_{nom_client}.pdf", mime="application/pdf")
-
-# --- SECTION ENVOI FINAL ---
-if not st.session_state.get('is_expert', False):
-    st.markdown("---")
-    mon_email = "bmainberger@ocp-patrimoine.com"
+    st.subheader("🎯 Diagnostics")
+    diag_tabs = st.tabs(["Structure", "Fiscalité", "Prévoyance", "Retraite"])
     
-    # Construction du lien magique
-    base_url = "https://analyse-ocp.streamlit.app/?"
-    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={tmi_c}"
-    lien_analyse = base_url + params
+    with diag_tabs[0]:
+        st.write("**Analyse de la liquidité**")
+        if total_brut_fin < (rev_annuel / 2):
+            st.error(f"🚨 Épargne de précaution insuffisante (Manque {(rev_annuel/2 - total_brut_fin):,.0f} €)")
+        else:
+            st.success("✅ Épargne de précaution OK")
+            
+    with diag_tabs[1]:
+        st.write("**Analyse Fiscale**")
+        if tmi_c in ["30%", "41%", "45%"]:
+            st.warning(f"📉 TMI à {tmi_c} : Fort levier d'optimisation détecté.")
+        else:
+            st.info("Pression fiscale modérée.")
 
-    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client}\nREVENUS : {rev_annuel} | PATRIMOINE : {total_brut_immo+total_brut_fin}\nLIEN : {lien_analyse}"
-
-    # Bouton HTML Propre
-    bouton_html = f"""
-        <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="DOSSIER" value="{corps_mail}">
-            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
-                🚀 TRANSMETTRE MON ÉTUDE
-           </button>
-        </form>
-    """
-    st.markdown(bouton_html, unsafe_allow_html=True)
-
+    with diag_tabs[2]:
+        st.write("**Analyse Prév
