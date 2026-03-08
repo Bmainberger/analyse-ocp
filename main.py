@@ -2,8 +2,20 @@ import streamlit as st
 from datetime import date
 from fpdf import FPDF # Nécessaire pour le bouton PDF
 
-# 1. CONFIGURATION ET STYLE DU BOUTON
+# --- 1. CONFIGURATION ET SYSTÈME DE MÉMOIRE ---
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
+
+# Initialisation des variables dans la mémoire (Session State)
+if 'nom_c' not in st.session_state: st.session_state['nom_c'] = ""
+if 'pre_c' not in st.session_state: st.session_state['pre_c'] = ""
+if 'rev_a' not in st.session_state: st.session_state['rev_a'] = 0.0
+if 'tmi_c' not in st.session_state: st.session_state['tmi_c'] = "11%"
+
+# RÉCUPÉRATION DES DONNÉES DEPUIS LE LIEN (URL)
+query_params = st.query_params
+if "nom" in query_params: st.session_state['nom_c'] = query_params["nom"]
+if "prenom" in query_params: st.session_state['pre_c'] = query_params["prenom"]
+if "rev" in query_params: st.session_state['rev_a'] = float(query_params["rev"])
 
 st.markdown("""
     <style>
@@ -24,9 +36,7 @@ total_brut_immo = 0.0
 total_brut_fin = 0.0
 total_passif = 0.0
 mensualites_totales = 0.0
-rev_annuel = 0.0
 rev_foncier = 0.0
-reste_vivre_brut = 0.0
 
 # 3. ACCÈS EXPERT
 if 'is_expert' not in st.session_state:
@@ -59,11 +69,12 @@ st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Le Client")
-    nom_client = st.text_input("Nom du Client", key="nom_c")
-    prenom_client = st.text_input("Prénom du Client", key="pre_c")
-    date_naissance = st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
-    lieu_naissance = st.text_input("Lieu de naissance", key="lieu_c")
-    nationalite = st.text_input("Nationalité", key="nat_c") 
+    # On utilise key= pour lier directement à la mémoire
+    st.text_input("Nom du Client", key="nom_c")
+    st.text_input("Prénom du Client", key="pre_c")
+    st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
+    st.text_input("Lieu de naissance", key="lieu_c")
+    st.text_input("Nationalité", key="nat_c") 
 
 with col2:
     st.subheader("Situation")
@@ -75,11 +86,11 @@ if situation in ["Marié(e)", "Pacsé(e)"]:
     st.subheader("Informations du Conjoint")
     c_col1, c_col2 = st.columns(2)
     with c_col1:
-        nom_conj = st.text_input("Nom du Conjoint", key="nom_conj")
-        dnaiss_conj = st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
+        st.text_input("Nom du Conjoint", key="nom_conj")
+        st.date_input("Date de naissance conjoint", value=date(1980, 1, 1), key="dnaiss_conj")
         st.text_input("Lieu de naissance conjoint", key="lieu_conj")
     with c_col2:
-        pre_conj = st.text_input("Prénom du Conjoint", key="pre_conj")
+        st.text_input("Prénom du Conjoint", key="pre_conj")
         st.text_input("Nationalité Conjoint", key="nat_conj")
 
 if nb_enfants > 0:
@@ -110,11 +121,11 @@ with cp1:
     st.selectbox("Statut Professionnel", ["Salarié", "TNS / Libéral", "Dirigeant", "Fonctionnaire", "Retraité", "Sans activité"], key="statut_pro")
     st.text_input("Profession / Intitulé du poste", key="poste_pro")
 with cp2:
-    rev_annuel = st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
+    st.number_input("Revenu net annuel (€)", min_value=0.0, key="rev_a")
     rev_foncier = st.number_input("Autres revenus (Foncier, etc.) (€)", min_value=0.0, key="rev_f")
 with cp3:
-    tmi_c = st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
-    age_retraite = st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
+    st.selectbox("Tranche Marginale d'Imposition (TMI)", ["0%", "11%", "30%", "41%", "45%"], key="tmi_c")
+    st.number_input("Âge de départ à la retraite prévu", min_value=50, max_value=80, value=64, key="age_ret")
 
 # --- SECTION 3 BIS : BUDGET ---
 st.subheader("📊 3. bis Budget & Capacité d'Épargne")
@@ -124,8 +135,7 @@ with b_col1:
     loyer_mens = st.number_input("Loyer ou Charges (€)", min_value=0.0, key="budget_loyer")
 with b_col2:
     impots_mens = st.number_input("Impôts mensuels (€)", min_value=0.0, key="budget_impot")
-    rev_mensuel_estim = (rev_annuel + rev_foncier) / 12
-    reste_vivre_brut = rev_mensuel_estim - (vie_courante + loyer_mens + impots_mens)
+    rev_mensuel_estim = (st.session_state.rev_a + rev_foncier) / 12
     st.info(f"Revenus mensuels estimés : {rev_mensuel_estim:,.0f} €")
 
 st.markdown("---")
@@ -195,10 +205,10 @@ for p in range(int(nb_prev_input)):
     with st.expander(f"Contrat Prévoyance n°{p+1}"):
         p1, p2, p3 = st.columns(3)
         with p1:
-            type_p = st.selectbox(f"Type de garantie {p}", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
+            type_p_gar = st.selectbox(f"Type de garantie {p}", ["Décès (Capital)", "Rente Éducation", "Rente Conjoint", "IJ (Revenu)", "Invalidité", "Emprunteur"], key=f"p_t_{p}")
         with p2:
             st.number_input(f"Montant Garanti (€) {p}", key=f"p_m_{p}")
-            if type_p == "Emprunteur":
+            if type_p_gar == "Emprunteur":
                 st.number_input(f"Quotité (%) {p}", min_value=0, max_value=100, value=100, key=f"p_q_{p}")
         with p3:
             st.text_input(f"Bénéficiaires {p}", key=f"p_b_{p}")
@@ -252,34 +262,32 @@ st.markdown("---")
 st.header("📝 10. Commentaires & Préconisations")
 col_com1, col_com2 = st.columns(2)
 with col_com1:
-    commentaires_client = st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
+    st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
 with col_com2:
-    if st.session_state.get('is_expert', False):
-        synthese_expert = st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
+    if st.session_state.is_expert:
+        st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
     else:
         st.info("Espace réservé à l'analyse de votre conseiller OCP.")
 
 # --- SECTION 11 : OBJECTIFS ---
-st.markdown("---")
 st.header("🎯 11. Objectifs & Priorités")
 col_obj1, col_obj2 = st.columns(2)
 with col_obj1:
     st.multiselect("Quels sont les objectifs principaux ?", ["Retraite", "Fiscalité", "Famille", "Transmission", "Immobilier"], key="obj_multi")
 with col_obj2:
-    horizon = st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
-    profil_r = st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
+    st.select_slider("Horizon", options=["Court", "Moyen", "Long", "Transmission"], key="horizon_p")
+    st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
 # --- SECTION 12 : ESPACE EXPERT ET 4 PILIERS ---
-if st.session_state.get('is_expert', False):
+if st.session_state.is_expert:
     st.sidebar.markdown("---")
     st.sidebar.title("📊 Les 4 Piliers OCP")
-    
     pat_brut = total_brut_immo + total_brut_fin
     pat_net = pat_brut - total_passif
     
     # PILIER 1 : LIQUIDITÉ
     epargne_securite = total_brut_fin
-    besoin_securite = rev_annuel / 2 # 6 mois
+    besoin_securite = st.session_state.rev_a / 2 
     if epargne_securite < besoin_securite:
         st.sidebar.error(f"🚨 Liquidité : Insuffisante (Manque {(besoin_securite - epargne_securite):,.0f} €)")
     else:
@@ -293,21 +301,20 @@ if st.session_state.get('is_expert', False):
         st.sidebar.success(f"✅ Endettement : {ratio_dette:.1f}% (Sain)")
 
     # PILIER 3 : RETRAITE
-    gap_mensuel = (rev_annuel / 12) * 0.45
-    st.sidebar.info(f"📉 Gap Retraite estimé : -{gap_mensuel:,.0f} € /mois")
+    gap_mensuel = (st.session_state.rev_a / 12) * 0.45
+    st.sidebar.info(f"📉 Gap Retraite : -{gap_mensuel:,.0f} €/mois")
 
     # PILIER 4 : FISCALITÉ
-    if tmi_c in ["30%", "41%", "45%"]:
-        st.sidebar.warning(f"📉 TMI à {tmi_c} : Fort levier d'optimisation")
+    if st.session_state.tmi_c in ["30%", "41%", "45%"]:
+        st.sidebar.warning(f"📉 TMI à {st.session_state.tmi_c} : Fort levier d'optimisation")
         
-    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €".replace(",", " "))
+    st.sidebar.metric("PATRIMOINE NET", f"{pat_net:,.0f} €")
 
-    # --- BOUTON PDF ---
     if st.button("📄 GÉNÉRER LE BILAN PDF PROFESSIONNEL"):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", 'B', 16)
-        pdf.cell(200, 10, f"Bilan Patrimonial - {prenom_client} {nom_client}", ln=True, align='C')
+        pdf.cell(200, 10, f"Bilan Patrimonial - {st.session_state.pre_c} {st.session_state.nom_c}", ln=True, align='C')
         pdf.set_font("Arial", '', 12)
         pdf.ln(10)
         pdf.cell(200, 10, f"Patrimoine Brut : {pat_brut:,.0f} EUR", ln=True)
@@ -318,32 +325,20 @@ if st.session_state.get('is_expert', False):
         pdf.cell(200, 10, "Synthese de l'Expert :", ln=True)
         pdf.set_font("Arial", '', 11)
         pdf.multi_cell(0, 10, st.session_state.get('syn_expert', 'Aucune note de synthese redigee.'))
-        
         pdf_output = pdf.output(dest='S').encode('latin-1')
-        st.download_button(label="📥 Télécharger le Bilan (PDF)", data=pdf_output, file_name=f"Bilan_{nom_client}.pdf", mime="application/pdf")
+        st.download_button(label="📥 Télécharger le Bilan (PDF)", data=pdf_output, file_name=f"Bilan_{st.session_state.nom_c}.pdf", mime="application/pdf")
 
 # --- SECTION ENVOI FINAL ---
-if not st.session_state.get('is_expert', False):
+if not st.session_state.is_expert:
     st.markdown("---")
     mon_email = "bmainberger@ocp-patrimoine.com"
-    
-    # Construction du lien magique
     base_url = "https://analyse-ocp.streamlit.app/?"
-    params = f"nom={nom_client}&prenom={prenom_client}&rev={rev_annuel}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={tmi_c}"
+    params = f"nom={st.session_state.nom_c}&prenom={st.session_state.pre_c}&rev={st.session_state.rev_a}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={st.session_state.tmi_c}"
     lien_analyse = base_url + params
-
-    corps_mail = f"DOSSIER CLIENT : {prenom_client} {nom_client}\nREVENUS : {rev_annuel} | PATRIMOINE : {total_brut_immo+total_brut_fin}\nLIEN : {lien_analyse}"
-
-    # Bouton HTML Propre
-    bouton_html = f"""
-        <form action="https://formsubmit.co/{mon_email}" method="POST">
-            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {nom_client}">
-            <input type="hidden" name="_captcha" value="false">
+    corps_mail = f"DOSSIER CLIENT : {st.session_state.pre_c} {st.session_state.nom_c}\nREVENUS : {st.session_state.rev_a} | PATRIMOINE : {total_brut_immo+total_brut_fin}\nLIEN : {lien_analyse}"
+    bouton_html = f"""<form action="https://formsubmit.co/{mon_email}" method="POST">
+            <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {st.session_state.nom_c}">
             <input type="hidden" name="DOSSIER" value="{corps_mail}">
-            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">
-                🚀 TRANSMETTRE MON ÉTUDE
-           </button>
-        </form>
-    """
+            <button type="submit" style="background-color: #1d2e4d; color: white; padding: 20px; font-size: 18px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold;">🚀 TRANSMETTRE MON ÉTUDE</button>
+        </form>"""
     st.markdown(bouton_html, unsafe_allow_html=True)
-
