@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import date
-from fpdf import FPDF # Nécessaire pour le bouton PDF
+from fpdf import FPDF 
 
 # --- 1. CONFIGURATION ET SYSTÈME DE MÉMOIRE ---
 st.set_page_config(page_title="OCP Patrimoine", page_icon="🛡️", layout="wide")
@@ -12,10 +12,15 @@ if 'rev_a' not in st.session_state: st.session_state['rev_a'] = 0.0
 if 'tmi_c' not in st.session_state: st.session_state['tmi_c'] = "11%"
 
 # RÉCUPÉRATION DES DONNÉES DEPUIS LE LIEN (URL)
+# On récupère les paramètres de l'URL pour auto-remplir les champs
 query_params = st.query_params
 if "nom" in query_params: st.session_state['nom_c'] = query_params["nom"]
 if "prenom" in query_params: st.session_state['pre_c'] = query_params["prenom"]
-if "rev" in query_params: st.session_state['rev_a'] = float(query_params["rev"])
+if "rev" in query_params:
+    try:
+        st.session_state['rev_a'] = float(query_params["rev"])
+    except:
+        pass
 
 st.markdown("""
     <style>
@@ -69,7 +74,6 @@ st.header("1. État Civil & Situation Familiale")
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Le Client")
-    # On utilise key= pour lier directement à la mémoire
     st.text_input("Nom du Client", key="nom_c")
     st.text_input("Prénom du Client", key="pre_c")
     st.date_input("Date de naissance", value=date(1980, 1, 1), key="dnaiss_c")
@@ -264,7 +268,7 @@ col_com1, col_com2 = st.columns(2)
 with col_com1:
     st.text_area("Précisions du client (projets, attentes spécifiques...)", key="com_client")
 with col_com2:
-    if st.session_state.is_expert:
+    if st.session_state.get('is_expert', False):
         st.text_area("Note de Synthèse de l'Expert (apparaîtra sur le bilan PDF)", key="syn_expert")
     else:
         st.info("Espace réservé à l'analyse de votre conseiller OCP.")
@@ -279,7 +283,7 @@ with col_obj2:
     st.select_slider("Profil de risque", options=["Prudent", "Équilibré", "Dynamique", "Offensif"], key="profil_r")
 
 # --- SECTION 12 : ESPACE EXPERT ET 4 PILIERS ---
-if st.session_state.is_expert:
+if st.session_state.get('is_expert', False):
     st.sidebar.markdown("---")
     st.sidebar.title("📊 Les 4 Piliers OCP")
     pat_brut = total_brut_immo + total_brut_fin
@@ -329,13 +333,21 @@ if st.session_state.is_expert:
         st.download_button(label="📥 Télécharger le Bilan (PDF)", data=pdf_output, file_name=f"Bilan_{st.session_state.nom_c}.pdf", mime="application/pdf")
 
 # --- SECTION ENVOI FINAL ---
-if not st.session_state.is_expert:
+if not st.session_state.get('is_expert', False):
     st.markdown("---")
     mon_email = "bmainberger@ocp-patrimoine.com"
-    base_url = "https://analyse-ocp.streamlit.app/?"
-    params = f"nom={st.session_state.nom_c}&prenom={st.session_state.pre_c}&rev={st.session_state.rev_a}&immo={total_brut_immo}&fin={total_brut_fin}&dettes={total_passif}&tmi={st.session_state.tmi_c}"
+    # MISE À JOUR DE L'URL RÉELLE
+    base_url = "https://analyse-ocp-hzixep8mm6jdekmfu5ur2h.streamlit.app/?"
+    
+    # Construction propre des paramètres
+    params = f"nom={st.session_state.nom_c}&prenom={st.session_state.pre_c}&rev={st.session_state.rev_a}"
     lien_analyse = base_url + params
-    corps_mail = f"DOSSIER CLIENT : {st.session_state.pre_c} {st.session_state.nom_c}\nREVENUS : {st.session_state.rev_a} | PATRIMOINE : {total_brut_immo+total_brut_fin}\nLIEN : {lien_analyse}"
+    
+    # Mail formaté pour être cliquable
+    corps_mail = f"DOSSIER CLIENT : {st.session_state.pre_c} {st.session_state.nom_c}\n"
+    corps_mail += f"REVENUS : {st.session_state.rev_a} EUR\n"
+    corps_mail += f"LIEN ANALYSE : {lien_analyse}"
+
     bouton_html = f"""<form action="https://formsubmit.co/{mon_email}" method="POST">
             <input type="hidden" name="_subject" value="NOUVELLE ÉTUDE : {st.session_state.nom_c}">
             <input type="hidden" name="DOSSIER" value="{corps_mail}">
